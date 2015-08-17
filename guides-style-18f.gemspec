@@ -10,10 +10,10 @@ Gem::Specification.new do |s|
   s.email         = ['michael.bland@gsa.gov']
   s.summary       = '18F Guides Template style elements'
   s.description   = (
-    'Provides consistent style elements for documents based on the '
-    '18F Guides Template (https://pages.18f.gov/guides-template/). '
-    'The 18F Guides theme is based on '
-    'DOCter (https://github.com/cfpb/docter/) from '
+    'Provides consistent style elements for documents based on the ' \
+    '18F Guides Template (https://pages.18f.gov/guides-template/). ' \
+    'The 18F Guides theme is based on ' \
+    'DOCter (https://github.com/cfpb/docter/) from ' \
     'CFPB (http://cfpb.github.io/).'
   )
   s.homepage      = 'https://github.com/18F/guides-style'
