@@ -16,6 +16,15 @@ group :jekyll_plugins do
 end
 ```
 
+Add an `assets/css/styles.scss` file that contains at least the following:
+
+```scss
+---
+---
+
+@import "guides_style_18f";
+```
+
 Then in your [`_config.yml` file](https://jekyllrb.com/docs/configuration/),
 add the following (you may need to remove any `layout:`
 [front matter](https://jekyllrb.com/docs/frontmatter/) from existing pages for
