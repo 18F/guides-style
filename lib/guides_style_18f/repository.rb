@@ -23,7 +23,7 @@ module GuidesStyle18F
 
   def self.remove_template_files(basedir)
     puts 'Clearing Guides Template files'
-    files = GuidesTemplate::TEMPLATE_FILES.map { |f| File.join basedir, f }
+    files = GuidesStyle18F::TEMPLATE_FILES.map { |f| File.join basedir, f }
     File.delete *files
   end
 

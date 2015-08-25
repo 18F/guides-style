@@ -33,19 +33,19 @@ module GuidesStyle18F
         'internal' => true,
       }
       title = title.downcase
-      parent = (front_matter['parent'] || '').downcase
 
       if nav_data_by_title.member? title
         nav_data_by_title[title].merge! page_nav
 
-      elsif !parent.empty?
+      elsif front_matter.member? 'parent'
+        parent = front_matter['parent'].downcase
         unless nav_data_by_title.member?(parent)
           raise StandardError.new("Parent page not present in existing " +
             "config: #{front_matter['parent']}\n" +
             "Needed by: #{front_matter['text']}")
         end
 
-        children = nav_data_by_title[parent]['children']
+        children = nav_data_by_title[parent]['children'] ||= []
         children_by_title = children.map { |i| [i['text'].downcase, i] }.to_h
 
         if children_by_title.member? title
