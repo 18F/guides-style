@@ -29,11 +29,7 @@ module GuidesStyle18F
     nav_data_by_title = nav_data.map { |nav| [nav['text'].downcase, nav] }.to_h
 
     pages_front_matter_by_title.each do |title, front_matter|
-      page_nav = {
-        'text' => title,
-        'url' => "#{front_matter['permalink'].split('/').last}/",
-        'internal' => true,
-      }
+      page_nav = page_nav title, front_matter
       title = title.downcase
 
       if nav_data_by_title.member? title
@@ -46,6 +42,14 @@ module GuidesStyle18F
     end
   end
   private_class_method :update_navigation_data
+
+  def self.page_nav(title, front_matter)
+    { 'text' => title,
+      'url' => "#{front_matter['permalink'].split('/').last}/",
+      'internal' => true,
+    }
+  end
+  private_class_method :page_nav
 
   def self.add_child_to_parent(title, child, page_nav, nav_data_by_title)
     parent = child['parent'].downcase
