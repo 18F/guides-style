@@ -52,13 +52,7 @@ module GuidesStyle18F
   private_class_method :page_nav
 
   def self.add_child_to_parent(title, child, page_nav, nav_data_by_title)
-    parent = child['parent'].downcase
-    unless nav_data_by_title.member?(parent)
-      fail StandardError, 'Parent page not present in existing ' \
-        "config: #{child['parent']}\nNeeded by: #{child['text']}"
-    end
-
-    children = nav_data_by_title[parent]['children'] ||= []
+    children = children child, nav_data_by_title
     children_by_title = children.map { |i| [i['text'].downcase, i] }.to_h
 
     if children_by_title.member? title
@@ -68,6 +62,16 @@ module GuidesStyle18F
     end
   end
   private_class_method :add_child_to_parent
+
+  def self.children(child, nav_data_by_title)
+    parent = child['parent'].downcase
+    unless nav_data_by_title.member?(parent)
+      fail StandardError, 'Parent page not present in existing ' \
+        "config: #{child['parent']}\nNeeded by: #{child['text']}"
+    end
+    nav_data_by_title[parent]['children'] ||= []
+  end
+  private_class_method :children
 
   def self.write_navigation_data_to_config_file(config_path, nav_data)
     lines = []
