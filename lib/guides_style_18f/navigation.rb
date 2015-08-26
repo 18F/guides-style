@@ -26,7 +26,8 @@ module GuidesStyle18F
   private_class_method :pages_front_matter_by_title
 
   def self.update_navigation_data(nav_data, pages_front_matter_by_title)
-    nav_data_by_title = nav_data.map { |nav| [nav['text'].downcase, nav] }.to_h
+    nav_data_by_title = nav_data_by_title nav_data
+    child_pages = []
 
     pages_front_matter_by_title.each do |title, front_matter|
       page_nav = page_nav title, front_matter
@@ -35,13 +36,22 @@ module GuidesStyle18F
       if nav_data_by_title.member? title
         nav_data_by_title[title].merge! page_nav
       elsif front_matter.member? 'parent'
-        add_child_to_parent title, front_matter, page_nav, nav_data_by_title
+        child_pages << [title, front_matter, page_nav]
       else
         nav_data << page_nav
       end
     end
+
+    child_pages.each do |title, front_matter, page_nav|
+      add_child_to_parent title, front_matter, page_nav, nav_data
+    end
   end
   private_class_method :update_navigation_data
+
+  def self.nav_data_by_title(nav_data)
+    nav_data.map { |nav| [nav['text'].downcase, nav] }.to_h
+  end
+  private_class_method :nav_data_by_title
 
   def self.page_nav(title, front_matter)
     { 'text' => title,
@@ -51,8 +61,10 @@ module GuidesStyle18F
   end
   private_class_method :page_nav
 
-  def self.add_child_to_parent(title, child, page_nav, nav_data_by_title)
-    children = children child, nav_data_by_title
+  def self.add_child_to_parent(title, child, page_nav, nav_data)
+    nav_data_by_title = nav_data_by_title nav_data
+    parent = parent child, nav_data_by_title
+    children = (parent['children'] ||= [])
     children_by_title = children.map { |i| [i['text'].downcase, i] }.to_h
 
     if children_by_title.member? title
@@ -63,15 +75,15 @@ module GuidesStyle18F
   end
   private_class_method :add_child_to_parent
 
-  def self.children(child, nav_data_by_title)
-    parent = child['parent'].downcase
-    unless nav_data_by_title.member?(parent)
+  def self.parent(child, nav_data_by_title)
+    parent = nav_data_by_title[child['parent'].downcase]
+    if parent.nil?
       fail StandardError, 'Parent page not present in existing ' \
-        "config: #{child['parent']}\nNeeded by: #{child['text']}"
+        "config: #{child['parent']}\nNeeded by: #{child['title']}"
     end
-    nav_data_by_title[parent]['children'] ||= []
+    parent
   end
-  private_class_method :children
+  private_class_method :parent
 
   def self.write_navigation_data_to_config_file(config_path, nav_data)
     lines = []
