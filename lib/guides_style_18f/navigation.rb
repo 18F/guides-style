@@ -11,7 +11,8 @@ module GuidesStyle18F
   def self.update_navigation_configuration(basedir)
     config_path = File.join basedir, '_config.yml'
     config_data = SafeYAML.load_file config_path, safe: true
-    nav_data = config_data['navigation']
+    return unless config_data
+    nav_data = (config_data['navigation'] || [])
     update_navigation_data nav_data, pages_front_matter_by_title(basedir)
     write_navigation_data_to_config_file config_path, nav_data
   end

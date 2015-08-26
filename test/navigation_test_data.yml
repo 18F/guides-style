@@ -1,0 +1,25 @@
+# Comments before the navigation section should be preserved.
+navigation:
+- text: Introduction
+  url: index.html
+  internal: true
+- text: Adding a new page
+  url: adding-a-new-page/
+  internal: true
+  children:
+  - text: Making a child page
+    url: making-a-child-page/
+    internal: true
+- text: Adding images
+  url: adding-images/
+  internal: true
+- text: Updating the config file
+  url: updating-the-config-file/
+  internal: true
+- text: GitHub setup
+  url: github-setup/
+  internal: true
+- text: Post your guide
+  url: post-your-guide/
+  internal: true
+# Comments after the navigation section should also be preserved.

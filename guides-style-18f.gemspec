@@ -26,5 +26,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'sass', '~> 3.4'
   s.add_runtime_dependency 'rouge', '~> 1.9'
   s.add_development_dependency 'rake'
+  s.add_development_dependency 'minitest'
+  s.add_development_dependency 'codeclimate-test-reporter'
+  s.add_development_dependency 'coveralls'
   s.add_development_dependency 'bundler'
+  s.add_development_dependency 'rubocop'
 end
