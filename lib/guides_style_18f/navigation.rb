@@ -77,20 +77,35 @@ module GuidesStyle18F
     lines = []
     in_navigation = false
     open(config_path).each_line do |line|
-      if !in_navigation && line.start_with?('navigation:')
-        lines << line
-        lines << nav_data.to_yaml["---\n".size..-1]
-        in_navigation = true
-      elsif in_navigation
-        unless line.start_with?(' ') || line.start_with?('-')
-          in_navigation = false
-          lines << line
-        end
-      else
-        lines << line
-      end
+      in_navigation = process_line line, lines, nav_data, in_navigation
     end
     File.write config_path, lines.join
   end
   private_class_method :write_navigation_data_to_config_file
+
+  def self.process_line(line, lines, nav_data, in_navigation = false)
+    if !in_navigation && line.start_with?('navigation:')
+      inject_navigation_section line, lines, nav_data
+      in_navigation = true
+    elsif in_navigation
+      in_navigation = maybe_skip_current_line line, lines
+    else
+      lines << line
+    end
+    in_navigation
+  end
+  private_class_method :process_line
+
+  def self.inject_navigation_section(line, lines, nav_data)
+    lines << line
+    lines << nav_data.to_yaml["---\n".size..-1]
+  end
+  private_class_method :inject_navigation_section
+
+  def self.maybe_skip_current_line(line, lines)
+    return true if line.start_with?(' ') || line.start_with?('-')
+    lines << line
+    false
+  end
+  private_class_method :maybe_skip_current_line
 end
