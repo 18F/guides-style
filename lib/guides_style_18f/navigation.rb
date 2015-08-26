@@ -23,6 +23,7 @@ module GuidesStyle18F
       [front_matter['title'], front_matter]
     end.to_h
   end
+  private_class_method :pages_front_matter_by_title
 
   def self.update_navigation_data(nav_data, pages_front_matter_by_title)
     nav_data_by_title = nav_data.map { |nav| [nav['text'].downcase, nav] }.to_h
@@ -37,29 +38,32 @@ module GuidesStyle18F
 
       if nav_data_by_title.member? title
         nav_data_by_title[title].merge! page_nav
-
       elsif front_matter.member? 'parent'
-        parent = front_matter['parent'].downcase
-        unless nav_data_by_title.member?(parent)
-          fail StandardError, 'Parent page not present in existing ' \
-            "config: #{front_matter['parent']}\n" \
-            "Needed by: #{front_matter['text']}"
-        end
-
-        children = nav_data_by_title[parent]['children'] ||= []
-        children_by_title = children.map { |i| [i['text'].downcase, i] }.to_h
-
-        if children_by_title.member? title
-          children_by_title[title].merge! page_nav
-        else
-          children << page_nav
-        end
-
+        add_child_to_parent title, front_matter, page_nav, nav_data_by_title
       else
         nav_data << page_nav
       end
     end
   end
+  private_class_method :update_navigation_data
+
+  def self.add_child_to_parent(title, child, page_nav, nav_data_by_title)
+    parent = child['parent'].downcase
+    unless nav_data_by_title.member?(parent)
+      fail StandardError, 'Parent page not present in existing ' \
+        "config: #{child['parent']}\nNeeded by: #{child['text']}"
+    end
+
+    children = nav_data_by_title[parent]['children'] ||= []
+    children_by_title = children.map { |i| [i['text'].downcase, i] }.to_h
+
+    if children_by_title.member? title
+      children_by_title[title].merge! page_nav
+    else
+      children << page_nav
+    end
+  end
+  private_class_method :add_child_to_parent
 
   def self.write_navigation_data_to_config_file(config_path, nav_data)
     lines = []
@@ -80,4 +84,5 @@ module GuidesStyle18F
     end
     File.write config_path, lines.join
   end
+  private_class_method :write_navigation_data_to_config_file
 end
