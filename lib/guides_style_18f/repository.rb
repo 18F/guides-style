@@ -4,7 +4,7 @@ require 'English'
 require 'fileutils'
 
 module GuidesStyle18F
-  TEMPLATE_FILES=%w(
+  TEMPLATE_FILES = %w(
     pages/child-page.md
     pages/config.md
     pages/github.md
@@ -19,12 +19,12 @@ module GuidesStyle18F
     images/gh-settings-button.png
     images/gh-webhook.png
     images/images.png
-    )
+  )
 
   def self.remove_template_files(basedir)
     puts 'Clearing Guides Template files'
     files = GuidesStyle18F::TEMPLATE_FILES.map { |f| File.join basedir, f }
-    File.delete *files
+    File.delete(*files)
   end
 
   def self.create_new_git_repository(basedir)

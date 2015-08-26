@@ -40,9 +40,9 @@ module GuidesStyle18F
       elsif front_matter.member? 'parent'
         parent = front_matter['parent'].downcase
         unless nav_data_by_title.member?(parent)
-          raise StandardError.new("Parent page not present in existing " +
-            "config: #{front_matter['parent']}\n" +
-            "Needed by: #{front_matter['text']}")
+          fail StandardError, 'Parent page not present in existing ' \
+            "config: #{front_matter['parent']}\n" \
+            "Needed by: #{front_matter['text']}"
         end
 
         children = nav_data_by_title[parent]['children'] ||= []
@@ -69,7 +69,7 @@ module GuidesStyle18F
         lines << nav_data.to_yaml["---\n".size..-1]
         in_navigation = true
       elsif in_navigation
-        if !(line.start_with?(' ') || line.start_with?('-'))
+        unless line.start_with?(' ') || line.start_with?('-')
           in_navigation = false
           lines << line
         end
