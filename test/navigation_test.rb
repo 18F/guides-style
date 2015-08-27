@@ -164,6 +164,9 @@ module GuidesStyle18F
       TRAILING_COMMENT,
     ].join "\n"
 
+    # An entry for the child already exists, and we want to move it under a
+    # parent page, under the presumption that the parent relationship was just
+    # added.
     def test_add_missing_parent_page
       write_config CONFIG_MISSING_PARENT_PAGE
       copy_pages ALL_PAGES

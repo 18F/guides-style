@@ -12,8 +12,8 @@ module GuidesStyle18F
     config_path = File.join basedir, '_config.yml'
     config_data = SafeYAML.load_file config_path, safe: true
     return unless config_data
-    nav_data = (config_data['navigation'] || [])
-    update_navigation_data nav_data, pages_front_matter_by_title(basedir)
+    nav_data = update_navigation_data(
+      (config_data['navigation'] || []), pages_front_matter_by_title(basedir))
     write_navigation_data_to_config_file config_path, nav_data
   end
 
@@ -33,18 +33,21 @@ module GuidesStyle18F
       page_nav = page_nav title, front_matter
       title = title.downcase
 
-      if nav_data_by_title.member? title
-        nav_data_by_title[title].merge! page_nav
-      elsif front_matter.member? 'parent'
+      if front_matter.member? 'parent'
         child_pages << [title, front_matter, page_nav]
+      elsif nav_data_by_title.member? title
+        nav_data_by_title[title].merge! page_nav
       else
         nav_data << page_nav
       end
     end
 
+    nav_data = remove_child_data nav_data, child_pages
+    nav_data_by_title = nav_data_by_title nav_data
     child_pages.each do |title, front_matter, page_nav|
-      add_child_to_parent title, front_matter, page_nav, nav_data
+      add_child_to_parent title, front_matter, page_nav, nav_data_by_title
     end
+    nav_data
   end
   private_class_method :update_navigation_data
 
@@ -61,10 +64,15 @@ module GuidesStyle18F
   end
   private_class_method :page_nav
 
-  def self.add_child_to_parent(title, child, page_nav, nav_data)
-    nav_data_by_title = nav_data_by_title nav_data
+  def self.remove_child_data(nav_data, child_pages)
+    titles = child_pages.map { |_, front_matter, _| front_matter['title'] }
+    nav_data.reject { |nav| titles.include? nav['text'] }
+  end
+  private_class_method :remove_child_data
+
+  def self.add_child_to_parent(title, child, page_nav, nav_data_by_title)
     parent = parent child, nav_data_by_title
-    children = (parent['children'] ||= [])
+    children = parent['children'] ||= []
     children_by_title = children.map { |i| [i['text'].downcase, i] }.to_h
 
     if children_by_title.member? title
