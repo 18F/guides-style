@@ -12,84 +12,86 @@ module GuidesStyle18F
     config_path = File.join basedir, '_config.yml'
     config_data = SafeYAML.load_file config_path, safe: true
     return unless config_data
-    nav_data = update_navigation_data(
-      (config_data['navigation'] || []), pages_front_matter_by_title(basedir))
+    nav_data = config_data['navigation'] || []
+    nav_data = update_navigation_data nav_data, basedir
     write_navigation_data_to_config_file config_path, nav_data
   end
 
-  def self.pages_front_matter_by_title(basedir)
-    Dir[File.join basedir, 'pages', '**', '*.md'].map do |f|
-      front_matter = SafeYAML.load_file f, safe: true
-      [front_matter['title'], front_matter]
-    end.to_h
+  def self.update_navigation_data(nav_data, basedir)
+    pages_data = pages_front_matter(basedir)
+    children = pages_data['children'].map { |child| child['title'].downcase }
+    nav_data.reject! { |nav| children.include? nav['text'].downcase }
+    update_parent_nav_data nav_data, pages_data['parents']
+    add_children_to_parents nav_data, pages_data['children']
   end
-  private_class_method :pages_front_matter_by_title
+  private_class_method :update_navigation_data
 
-  def self.update_navigation_data(nav_data, pages_front_matter_by_title)
-    nav_data_by_title = nav_data_by_title nav_data
-    child_pages = []
+  def self.pages_front_matter(basedir)
+    front_matter = Dir[File.join basedir, 'pages', '**', '*.md'].map do |f|
+      SafeYAML.load_file f, safe: true
+    end
+    pages_data = front_matter.group_by do |fm|
+      fm['parent'].nil? ? 'parents' : 'children'
+    end
+    %w(parents children).each { |category| pages_data[category] ||= [] }
+    pages_data
+  end
+  private_class_method :pages_front_matter
 
-    pages_front_matter_by_title.each do |title, front_matter|
-      page_nav = page_nav title, front_matter
-      title = title.downcase
-
-      if front_matter.member? 'parent'
-        child_pages << [title, front_matter, page_nav]
-      elsif nav_data_by_title.member? title
-        nav_data_by_title[title].merge! page_nav
+  def self.update_parent_nav_data(nav_data, parents)
+    nav_by_title = nav_data_by_title nav_data
+    parents.each do |page|
+      page_nav = page_nav page
+      title = page_nav['text'].downcase
+      if nav_by_title.member? title
+        nav_by_title[title].merge! page_nav
       else
         nav_data << page_nav
       end
     end
-
-    nav_data = remove_child_data nav_data, child_pages
-    nav_data_by_title = nav_data_by_title nav_data
-    child_pages.each do |title, front_matter, page_nav|
-      add_child_to_parent title, front_matter, page_nav, nav_data_by_title
-    end
-    nav_data
   end
-  private_class_method :update_navigation_data
+  private_class_method :update_parent_nav_data
 
   def self.nav_data_by_title(nav_data)
     nav_data.map { |nav| [nav['text'].downcase, nav] }.to_h
   end
   private_class_method :nav_data_by_title
 
-  def self.page_nav(title, front_matter)
-    { 'text' => title,
+  def self.page_nav(front_matter)
+    { 'text' => front_matter['title'],
       'url' => "#{front_matter['permalink'].split('/').last}/",
       'internal' => true,
     }
   end
   private_class_method :page_nav
 
-  def self.remove_child_data(nav_data, child_pages)
-    titles = child_pages.map { |_, front_matter, _| front_matter['title'] }
-    nav_data.reject { |nav| titles.include? nav['text'] }
+  def self.add_children_to_parents(nav_data, children)
+    parents_by_title = nav_data_by_title nav_data
+    children.each { |child| add_child_to_parent child, parents_by_title }
+    nav_data
   end
-  private_class_method :remove_child_data
+  private_class_method :add_children_to_parents
 
-  def self.add_child_to_parent(title, child, page_nav, nav_data_by_title)
-    parent = parent child, nav_data_by_title
+  def self.add_child_to_parent(child, parents_by_title)
+    child_nav_data = page_nav child
+    title = child_nav_data['text'].downcase
+    parent = parent child, parents_by_title
     children = parent['children'] ||= []
-    children_by_title = children.map { |i| [i['text'].downcase, i] }.to_h
+    children_by_title = children.map { |c| [c['text'].downcase, c] }.to_h
 
     if children_by_title.member? title
-      children_by_title[title].merge! page_nav
+      children_by_title[title].merge! child_nav_data
     else
-      children << page_nav
+      children << child_nav_data
     end
   end
   private_class_method :add_child_to_parent
 
-  def self.parent(child, nav_data_by_title)
-    parent = nav_data_by_title[child['parent'].downcase]
-    if parent.nil?
-      fail StandardError, 'Parent page not present in existing ' \
-        "config: #{child['parent']}\nNeeded by: #{child['title']}"
-    end
-    parent
+  def self.parent(child, parents_by_title)
+    parent = parents_by_title[child['parent'].downcase]
+    return parent unless parent.nil?
+    fail StandardError, 'Parent page not present in existing ' \
+      "config: #{child['parent']}\nNeeded by: #{child['title']}"
   end
   private_class_method :parent
 
@@ -105,27 +107,15 @@ module GuidesStyle18F
 
   def self.process_line(line, lines, nav_data, in_navigation = false)
     if !in_navigation && line.start_with?('navigation:')
-      inject_navigation_section line, lines, nav_data
+      lines << line << nav_data.to_yaml["---\n".size..-1]
       in_navigation = true
     elsif in_navigation
-      in_navigation = maybe_skip_current_line line, lines
+      in_navigation = line.start_with?(' ') || line.start_with?('-')
+      lines << line unless in_navigation
     else
       lines << line
     end
     in_navigation
   end
   private_class_method :process_line
-
-  def self.inject_navigation_section(line, lines, nav_data)
-    lines << line
-    lines << nav_data.to_yaml["---\n".size..-1]
-  end
-  private_class_method :inject_navigation_section
-
-  def self.maybe_skip_current_line(line, lines)
-    return true if line.start_with?(' ') || line.start_with?('-')
-    lines << line
-    false
-  end
-  private_class_method :maybe_skip_current_line
 end
