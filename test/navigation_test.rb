@@ -174,6 +174,17 @@ module GuidesStyle18F
       assert_result_matches_expected_config
     end
 
+    def test_should_raise_if_parent_page_does_not_exist
+      write_config CONFIG_MISSING_PARENT_PAGE
+      copy_pages ALL_PAGES.reject { |page| page == 'new-page.md' }
+      exception = assert_raises(StandardError) do
+        GuidesStyle18F.update_navigation_configuration testdir
+      end
+      expected = 'Parent page not present in existing config: ' \
+        '"Adding a new page" needed by: "Making a child page"'
+      assert_equal expected, exception.message
+    end
+
     CONFIG_CONTAINING_ONLY_INTRODUCTION = [
       LEADING_COMMENT,
       'navigation:',

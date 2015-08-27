@@ -91,7 +91,7 @@ module GuidesStyle18F
     parent = parents_by_title[child['parent'].downcase]
     return parent unless parent.nil?
     fail StandardError, 'Parent page not present in existing ' \
-      "config: #{child['parent']}\nNeeded by: #{child['title']}"
+      "config: \"#{child['parent']}\" needed by: \"#{child['title']}\""
   end
   private_class_method :parent
 
