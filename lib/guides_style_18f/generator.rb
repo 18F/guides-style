@@ -1,6 +1,6 @@
 # @author Mike Bland (michael.bland@gsa.gov)
 
-require 'jekyll/generator'
+require 'jekyll'
 
 module GuidesStyle18F
   class Generator < ::Jekyll::Generator
