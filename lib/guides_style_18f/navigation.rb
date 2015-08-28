@@ -18,7 +18,7 @@ module GuidesStyle18F
   end
 
   def self.update_navigation_data(nav_data, basedir)
-    pages_data = pages_front_matter(basedir)
+    pages_data = pages_front_matter basedir
     children = pages_data['children'].map { |child| child['title'].downcase }
     nav_data.reject! { |nav| children.include? nav['text'].downcase }
     update_parent_nav_data nav_data, pages_data['parents']
