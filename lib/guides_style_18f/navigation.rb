@@ -3,6 +3,49 @@
 require 'safe_yaml'
 
 module GuidesStyle18F
+  module FrontMatter
+    def self.load(basedir)
+      Dir[File.join basedir, 'pages', '**', '*.md'].map do |f|
+        [f[basedir.size + 1..-1], SafeYAML.load_file(f, safe: true)]
+      end.to_h
+    end
+
+    def self.validate_with_message_upon_error(front_matter)
+      files_with_errors = validate front_matter
+      return if files_with_errors.empty?
+      message = ['The following files have errors in their front matter:']
+      files_with_errors.each do |file, errors|
+        message << "  #{file}:"
+        message.concat errors.map { |error| "    #{error}" }
+      end
+      message.join "\n" unless message.size == 1
+    end
+
+    def self.validate(front_matter)
+      front_matter.map do |file, data|
+        next [file, ['no front matter defined']] unless data.instance_of? Hash
+        errors = missing_property_errors(data) + permalink_errors(data)
+        [file, errors] unless errors.empty?
+      end.compact.to_h
+    end
+
+    def self.missing_property_errors(data)
+      properties = %w(title permalink)
+      properties.map { |p| "no `#{p}:` property" unless data[p] }.compact
+    end
+    private_class_method :missing_property_errors
+
+    def self.permalink_errors(data)
+      pl = data['permalink']
+      return [] if pl.nil?
+      errors = []
+      errors << "`permalink:` does not begin with '/'" unless pl.start_with? '/'
+      errors << "`permalink:` does not end with '/'" unless pl.end_with? '/'
+      errors
+    end
+    private_class_method :permalink_errors
+  end
+
   # Automatically updates the `navigation:` field in _config.yml.
   #
   # Does this by parsing the front matter from files in `pages/`. Preserves the
@@ -27,10 +70,10 @@ module GuidesStyle18F
   private_class_method :update_navigation_data
 
   def self.pages_front_matter(basedir)
-    front_matter = Dir[File.join basedir, 'pages', '**', '*.md'].map do |f|
-      SafeYAML.load_file f, safe: true
-    end
-    pages_data = front_matter.group_by do |fm|
+    front_matter = FrontMatter.load basedir
+    errors = FrontMatter.validate_with_message_upon_error front_matter
+    abort errors + "\n_config.yml not updated" if errors
+    pages_data = front_matter.values.group_by do |fm|
       fm['parent'].nil? ? 'parents' : 'children'
     end
     %w(parents children).each { |category| pages_data[category] ||= [] }
