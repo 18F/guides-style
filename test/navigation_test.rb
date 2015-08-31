@@ -5,6 +5,7 @@ require_relative '../lib/guides_style_18f/navigation'
 require 'fileutils'
 require 'minitest/autorun'
 require 'safe_yaml'
+require 'stringio'
 
 module GuidesStyle18F
   # rubocop:disable ClassLength
@@ -199,6 +200,88 @@ module GuidesStyle18F
       copy_pages ALL_PAGES
       GuidesStyle18F.update_navigation_configuration testdir
       assert_result_matches_expected_config
+    end
+
+    MISSING_TITLE_AND_PERMALINK = <<MISSING_TITLE_AND_PERMALINK
+---
+other_property: other value
+---
+MISSING_TITLE_AND_PERMALINK
+
+    MISSING_TITLE = <<MISSING_TITLE
+---
+permalink: /no-title/
+---
+MISSING_TITLE
+
+    MISSING_LINK = <<MISSING_LINK
+---
+title: No permalink
+---
+MISSING_LINK
+
+    NO_LEADING_SLASH = <<NO_LEADING_SLASH
+---
+title: No leading slash
+permalink: no-leading-slash/
+---
+NO_LEADING_SLASH
+
+    NO_TRAILING_SLASH = <<NO_TRAILING_SLASH
+---
+title: No trailing slash
+permalink: /no-trailing-slash
+---
+NO_TRAILING_SLASH
+
+    FILES_WITH_ERRORS = {
+      'missing-front-matter.md' => 'no front matter brosef',
+      'missing-title-and-permalink.md' => MISSING_TITLE_AND_PERMALINK,
+      'missing-title.md' => MISSING_TITLE,
+      'missing-link.md' => MISSING_LINK,
+      'no-leading-slash.md' => NO_LEADING_SLASH,
+      'no-trailing-slash.md' => NO_TRAILING_SLASH,
+    }
+
+    EXPECTED_ERRORS = <<EXPECTED_ERRORS
+The following files have errors in their front matter:
+  pages/missing-front-matter.md:
+    no front matter defined
+  pages/missing-link.md:
+    no `permalink:` property
+  pages/missing-title-and-permalink.md:
+    no `title:` property
+    no `permalink:` property
+  pages/missing-title.md:
+    no `title:` property
+  pages/no-leading-slash.md:
+    `permalink:` does not begin with '/'
+  pages/no-trailing-slash.md:
+    `permalink:` does not end with '/'
+EXPECTED_ERRORS
+
+    def write_page(filename, content)
+      File.write File.join(pages_dir, filename), content
+    end
+
+    def test_detect_front_matter_errors
+      FILES_WITH_ERRORS.each { |file, content| write_page file, content }
+      errors = GuidesStyle18F::FrontMatter.validate_with_message_upon_error(
+        GuidesStyle18F::FrontMatter.load(testdir))
+      assert_equal EXPECTED_ERRORS, errors + "\n"
+    end
+
+    def test_show_error_message_and_exit_if_pages_front_matter_is_malformed
+      orig_stderr, $stderr = $stderr, StringIO.new
+      write_config "navigation:"
+      FILES_WITH_ERRORS.each { |file, content| write_page file, content }
+      exception = assert_raises(SystemExit) do
+        GuidesStyle18F.update_navigation_configuration testdir
+      end
+      assert_equal 1, exception.status
+      assert_equal EXPECTED_ERRORS + "_config.yml not updated\n", $stderr.string
+    ensure
+      $stderr = orig_stderr
     end
   end
   # rubocop:enable ClassLength
