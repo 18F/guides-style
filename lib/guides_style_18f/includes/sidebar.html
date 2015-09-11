@@ -16,7 +16,7 @@
                 aria-hidden="{% if link.text == page.parent or link.text == page.title %}false{% else %}true{% endif %}">
               {% for child in link.children %}
                 <li class="{% if page.title == child.text %}sidebar-nav-active{% endif %}">
-                  <a href="{% if link.internal == true %}{{ site.baseurl }}/{{ link.url }}{% endif %}{{ child.url }}"  
+                  <a href="{% if child.internal == true %}{{ site.baseurl }}/{{ link.url }}{% endif %}{{ child.url }}"
                     title="{% if page.title == child.text %}Current Page
                           {% else %}{{ child.text }}{% endif %}">{{ child.text }}</a>
                 </li>
