@@ -1,5 +1,5 @@
 # @author Mike Bland (michael.bland@gsa.gov)
 
 module GuidesStyle18F
-  VERSION = '0.1.2'
+  VERSION = '0.1.3'
 end
