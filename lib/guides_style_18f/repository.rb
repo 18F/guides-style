@@ -5,6 +5,7 @@ require 'fileutils'
 
 module GuidesStyle18F
   TEMPLATE_FILES = %w(
+    pages/baseurl.md
     pages/child-page.md
     pages/config.md
     pages/github.md
