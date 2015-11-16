@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'jekyll'
   s.add_runtime_dependency 'sass'
   s.add_runtime_dependency 'rouge'
+  s.add_runtime_dependency 'us_web_design_standards'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'minitest'
   s.add_development_dependency 'codeclimate-test-reporter'

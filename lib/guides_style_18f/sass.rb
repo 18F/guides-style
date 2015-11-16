@@ -1,6 +1,7 @@
 # @author Mike Bland (michael.bland@gsa.gov)
 
 require 'sass'
+require 'us_web_design_standards'
 
 module GuidesStyle18F
   class Sass
