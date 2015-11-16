@@ -13,6 +13,7 @@ module GuidesStyle18F
       @site = site
       @base = File.join File.dirname(__FILE__), 'layouts'
       @name = "#{layout_file}.html"
+      @path = File.join @base, @name
       parse_content_and_data File.join(@base, name)
       process name
     end

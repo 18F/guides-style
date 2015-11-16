@@ -22,9 +22,15 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files -z *.md lib assets`.split("\x0")
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename f }
 
+<<<<<<< HEAD
   s.add_runtime_dependency 'jekyll', '~> 2.5'
   s.add_runtime_dependency 'sass', '~> 3.4'
   s.add_runtime_dependency 'rouge', '~> 1.9'
+=======
+  s.add_runtime_dependency 'jekyll'
+  s.add_runtime_dependency 'sass'
+  s.add_runtime_dependency 'rouge'
+>>>>>>> 676fa192e774c9d0578372da4aa41b83a4275836
   s.add_runtime_dependency 'us_web_design_standards'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'minitest'
