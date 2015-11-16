@@ -4,29 +4,34 @@
   {% guides_style_18f_include header.html %}
 
   <body>
+    <a class="skipnav" href="#main">Skip to Main Content</a>
 
     <div class="container">
 
-      <header role="banner">
+      <header class="site-header" role="banner">
 
-        <div class="wrap">
+        <div class="usa-grid">
           {% if site.logourl != null %}
-            <a href="{{ site.author.url }}"><img class="logo" src="{{ site.baseurl }}{{ site.logourl }}" alt="{{ site.logoalt }}" width="75px"></a>
+            <a href="{{ site.author.url }}"><img class="logo" src="{{ site.baseurl }}{{ site.logourl }}" alt="{{ site.logoalt }}"></a>
           {% endif %}
-          <h1 class="site-title"><a class="title-link" href="{{ site.baseurl }}/">{{ site.name }}</a></h1>{% if site.back_link %}
-          <div class="back-link"><a href="{{ site.back_link.url }}">&laquo; {{ site.back_link.text }}</a></div>{% endif %}
+          <h1 class="site-title">
+            <a class="site-title-link" href="{{ site.baseurl }}/">{{ site.name }}</a>
+          </h1>{% if site.back_link %}
+          <div class="back-link">
+            <a href="{{ site.back_link.url }}">&laquo; {{ site.back_link.text }}</a>
+          </div>{% endif %}
         </div>
         
       </header>
 
-      <div class="wrap content">
+      <div class="usa-grid">
 
-        <section id="main" class="main-content" role="main">
+        {% guides_style_18f_include sidebar.html %}
+
+        <section class="main-content usa-width-two-thirds" id="main" role="main">
           <h1>{{ page.title }}</h1>
           {{ content }}
         </section>
-
-        {% guides_style_18f_include sidebar.html %}
 
       </div><!-- /.wrap content -->
 
