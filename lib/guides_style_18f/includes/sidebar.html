@@ -4,7 +4,7 @@
     <ul class="usa-sidenav-list">
       {% for link in site.navigation %}
         <li class="group {% if page.title == link.text %}sidebar-nav-active{% endif %}">
-          <a class="{% if page.title == link.text %}usa-current{% endif %}" href="{% if link.internal == true %}{{ site.baseurl }}/{% endif %}{{ link.url }}"  
+          <a class="{% if page.title == link.text or page.parent == link.text %}usa-current{% endif %}" href="{% if link.internal == true %}{{ site.baseurl }}/{% endif %}{{ link.url }}"  
             title="{% if page.title == link.text %}Current Page
                   {% else %}{{ link.text }}{% endif %}">{{ link.text }}</a>
           {% if link.children %}
@@ -15,8 +15,7 @@
                 aria-hidden="{% if link.text == page.parent or link.text == page.title %}false{% else %}true{% endif %}">
               {% for child in link.children %}
                 <li class="{% if page.title == child.text %}sidebar-nav-active{% endif %}">
-                  <a class="{% if page.title == child.text %}usa-current
-                          {% else %}{{ child.text }}{% endif %}" href="{% if child.internal == true %}{{ site.baseurl }}/{{ link.url }}{% endif %}{{ child.url }}"
+                  <a class="{% if page.title == child.text %}usa-current{% endif %}" href="{% if child.internal == true %}{{ site.baseurl }}/{{ link.url }}{% endif %}{{ child.url }}"
                     title="{% if page.title == child.text %}Current Page
                           {% else %}{{ child.text }}{% endif %}">{{ child.text }}</a>
                 </li>
