@@ -63,6 +63,9 @@ h2 {
 
 h3 {
     margin-top: 30px;
+    a {
+       border-bottom: 1px dotted #0072ce; 
+    }
 }
 
 h4 {
@@ -111,24 +114,20 @@ a,
 a:link,
 a:visited {
     color: #0072ce;
-    border-bottom: 1px dotted #0072ce;
     text-decoration: none;
 }
 
 a:hover {
-    border-bottom: 1px solid #7eb8dd;
     color: #7eb8dd;
     text-decoration: none;
 }
 
 a:active {
-    border-bottom: 1px solid #002d72;
     color: #002d72;
     text-decoration: none;
 }
 
 a:focus {
-    border-bottom: 1px solid #0072ce;
     color: #0072ce;
     outline: thin dotted;
     text-decoration: none;
@@ -136,19 +135,16 @@ a:focus {
 
 a.title-link {
     color: #75787B;
-    border-bottom: none;
 }
 
 a.title-link:hover,
 a.title-link:active,
 a.title-link:focus {
     color: #7eb8dd;
-    border-bottom: none;
 }
 
 a.skip-link {
     color: #0072ce;
-    border-bottom: none;
     padding: .25em;
 }
 
@@ -157,9 +153,16 @@ a.skip-link:active,
 a.skip-link:focus {
     background-color: #0072ce;
     color: #fff;
-    border-bottom: none;
 }
 
+p {
+    a,
+    a:link,
+    a:visited {
+        border-bottom: 1px dotted #0072ce;
+    
+    }
+}
 
 /*
 Navigation
@@ -325,6 +328,10 @@ header {
     padding: 2em 0;
 }
 
+.main-content img {
+    width: 100%;
+
+}
 
 /*
 Footer
