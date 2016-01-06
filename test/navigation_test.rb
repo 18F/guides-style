@@ -19,11 +19,13 @@ module GuidesStyle18F
     NAV_YAML = File.read(NAV_DATA_PATH)
     NAV_DATA = SafeYAML.load(NAV_YAML, safe: true)
 
-    NAV_DATA_WITHOUT_COLLECTIONS_PATH = File.join(
-      TEST_DIR, 'navigation_test_data_without_collections.yml')
-    NAV_YAML_WITHOUT_COLLECTIONS = File.read(NAV_DATA_WITHOUT_COLLECTIONS_PATH)
-    NAV_DATA_WITHOUT_COLLECTIONS = SafeYAML.load(
-      NAV_YAML_WITHOUT_COLLECTIONS, safe: true)
+    COLLECTIONS_CONFIG = [
+      'collections:',
+      '  pages:',
+      '    output: true',
+      '    permalink: /:path/',
+      '',
+    ].join("\n")
 
     def setup
       @testdir = Dir.mktmpdir
@@ -36,8 +38,9 @@ module GuidesStyle18F
       FileUtils.remove_entry testdir
     end
 
-    def write_config(config_data)
-      File.write config_path, config_data
+    def write_config(config_data, with_collections: true)
+      prefix = with_collections ? COLLECTIONS_CONFIG : ''
+      File.write(config_path, "#{prefix}#{config_data}")
     end
 
     def read_config
@@ -71,13 +74,13 @@ module GuidesStyle18F
     end
 
     def test_empty_config_no_pages
-      write_config ''
+      write_config('', with_collections: false)
       GuidesStyle18F.update_navigation_configuration @testdir
       assert_equal '', read_config
     end
 
     def test_empty_config_no_nav_data_no_pages
-      write_config ''
+      write_config('', with_collections: false)
       GuidesStyle18F.update_navigation_configuration @testdir
       assert_equal '', read_config
     end
@@ -85,14 +88,14 @@ module GuidesStyle18F
     def test_config_with_nav_data_but_no_pages
       write_config NAV_YAML
       GuidesStyle18F.update_navigation_configuration @testdir
-      assert_equal NAV_YAML, read_config
+      assert_equal "#{COLLECTIONS_CONFIG}#{NAV_YAML}", read_config
     end
 
     def test_all_pages_with_existing_data
       write_config NAV_YAML
       copy_pages ALL_PAGES
       GuidesStyle18F.update_navigation_configuration testdir
-      assert_equal NAV_YAML, read_config
+      assert_equal "#{COLLECTIONS_CONFIG}#{NAV_YAML}", read_config
     end
 
     ALL_PAGES = %w(
@@ -105,12 +108,6 @@ module GuidesStyle18F
       update-the-config-file/understanding-baseurl.md
       update-the-config-file.md
     )
-    COLLECTIONS_CONFIG = [
-      'collections:',
-      '  pages:',
-      '    output: true',
-      '    permalink: /:path/',
-    ].join("\n")
     LEADING_COMMENT = '' \
       '# Comments before the navigation section should be preserved.'
     TRAILING_COMMENT = '' \
@@ -127,7 +124,6 @@ module GuidesStyle18F
 
     def test_add_all_pages_from_scratch
       write_config([
-        COLLECTIONS_CONFIG,
         LEADING_COMMENT,
         'navigation:',
         TRAILING_COMMENT,
@@ -137,17 +133,35 @@ module GuidesStyle18F
       assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
     end
 
-    def test_add_all_pages_from_scratch_without_collection
+    def write_config_without_collection
+      # Use the `pages/` dir instead of `_pages`. Set the default permalink
+      # for all the pages so we don't need to manually update every page.
       @pages_dir = File.join(testdir, 'pages')
       FileUtils.mkdir_p pages_dir
       config = [
         'permalink: /:path/', LEADING_COMMENT, 'navigation:', TRAILING_COMMENT
       ].join("\n")
-      write_config(config)
+      write_config(config, with_collections: false)
+    end
+
+    def move_home_page_and_create_external_page
+      # Pull the home page to the root to make sure it's included, and make a
+      # new page outside of the `pages/` directory to make sure it isn't
+      # included.
       copy_pages(ALL_PAGES)
+      FileUtils.mv(File.join(pages_dir, 'index.md'), testdir)
+      File.write(File.join(testdir, 'excluded.md'), [
+        '---',
+        'title: This page shouldn\'t appear in the navigation menu',
+        '---',
+      ].join("\n"))
+    end
+
+    def test_add_all_pages_from_scratch_without_collection
+      write_config_without_collection
+      move_home_page_and_create_external_page
       GuidesStyle18F.update_navigation_configuration testdir
-      assert_result_matches_expected_config(
-        sorted_nav_data(NAV_DATA_WITHOUT_COLLECTIONS))
+      assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
     end
 
     CONFIG_WITH_MISSING_PAGES = [
