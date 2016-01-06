@@ -9,3 +9,6 @@ require 'guides_style_18f/repository'
 require 'guides_style_18f/sass'
 require 'guides_style_18f/update'
 require 'guides_style_18f/version'
+
+require 'jekyll_pages_api'
+require 'jekyll_pages_api_search'

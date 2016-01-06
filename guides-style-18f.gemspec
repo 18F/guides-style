@@ -23,6 +23,8 @@ Gem::Specification.new do |s|
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename f }
 
   s.add_runtime_dependency 'jekyll'
+  s.add_runtime_dependency 'jekyll_pages_api'
+  s.add_runtime_dependency 'jekyll_pages_api_search'
   s.add_runtime_dependency 'sass'
   s.add_runtime_dependency 'rouge'
   s.add_development_dependency 'rake'
