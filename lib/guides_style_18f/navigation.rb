@@ -56,6 +56,16 @@ module GuidesStyle18F
       end.to_h
     end
 
+    # We're supporting two possible configurations:
+    # 
+    # - a `pages/` directory in which documents appear as part of the regular
+    #   site.pages collection; we have to filter by page.relative_path, and we
+    #   do not assign a permalink so that validation (in a later step) will
+    #   ensure that each page has a permalink assigned
+    #
+    # - an actual `pages` collection, stored in a `_pages` directory; no
+    #   filtering is necessary, and we can reliably set the permalink to
+    #   page.url as a default
     def self.site_pages(site)
       pages = site.collections['pages']
       if pages.nil?
@@ -73,6 +83,9 @@ module GuidesStyle18F
         pages_dir = Dir.exist?('_pages') ? '_pages' : 'pages'
         Dir[File.join(pages_dir, '**', '*')].each do |file_name|
           next unless File.file?(file_name)
+          # What we're doing here is preserving the front matter if we've
+          # already parsed it, and otherwise flagging a file as missing front
+          # matter by creating a nil entry for file_name.
           file_to_front_matter[file_name] = file_to_front_matter[file_name]
         end
       end
@@ -153,6 +166,8 @@ module GuidesStyle18F
       'url' => "#{url_components.nil? ? '' : url_components.last}/",
       'internal' => true,
     }
+    # Delete the root URL so we don't have an empty `url:` property laying
+    # around.
     result.delete 'url' if result['url'] == '/'
     result
   end
