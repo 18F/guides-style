@@ -154,29 +154,16 @@ module GuidesStyle18F
   private_class_method :nav_data_by_title
 
   def self.page_nav(front_matter)
+    url_components = front_matter['permalink'].split('/')[1..-1]
     result = {
       'text' => front_matter['title'],
-      'url' => "#{get_nav_url(front_matter)}/",
+      'url' => "#{url_components.nil? ? '' : url_components.last}/",
       'internal' => true,
     }
     result.delete 'url' if result['url'] == '/'
     result
   end
   private_class_method :page_nav
-
-  def self.get_nav_url(front_matter)
-    url_components = front_matter['permalink'].split('/')[1..-1]
-    if url_components.nil?
-      ''
-    elsif url_components.length == 2 && url_components.first == 'pages'
-      # Really, we should force non-collection pages to use a proper
-      # `permalink:`, but oh well.
-      File.join(url_components)
-    else
-      url_components.last
-    end
-  end
-  private_class_method :get_nav_url
 
   def self.add_children_to_parents(nav_data, children)
     parents_by_title = nav_data_by_title nav_data
