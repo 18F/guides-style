@@ -6,6 +6,11 @@ require 'safe_yaml'
 module GuidesStyle18F
   module FrontMatter
     def self.load(basedir)
+      # init_file_to_front_matter_map is initializing the map with a nil value
+      # for every file that _should_ contain front matter as far as the
+      # navigation menu is concerned. Any nil values that remain after merging
+      # with the site_file_to_front_matter map will result in a validation
+      # error.
       init_file_to_front_matter_map(basedir).merge(
         site_file_to_front_matter(init_site(basedir)))
     end
@@ -57,7 +62,7 @@ module GuidesStyle18F
     end
 
     # We're supporting two possible configurations:
-    # 
+    #
     # - a `pages/` directory in which documents appear as part of the regular
     #   site.pages collection; we have to filter by page.relative_path, and we
     #   do not assign a permalink so that validation (in a later step) will
@@ -83,10 +88,7 @@ module GuidesStyle18F
         pages_dir = Dir.exist?('_pages') ? '_pages' : 'pages'
         Dir[File.join(pages_dir, '**', '*')].each do |file_name|
           next unless File.file?(file_name)
-          # What we're doing here is preserving the front matter if we've
-          # already parsed it, and otherwise flagging a file as missing front
-          # matter by creating a nil entry for file_name.
-          file_to_front_matter[file_name] = file_to_front_matter[file_name]
+          file_to_front_matter[file_name] = nil
         end
       end
       file_to_front_matter
