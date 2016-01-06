@@ -1,13 +1,18 @@
 # @author Mike Bland (michael.bland@gsa.gov)
 
+require 'jekyll'
 require 'safe_yaml'
 
 module GuidesStyle18F
   module FrontMatter
     def self.load(basedir)
-      Dir[File.join basedir, 'pages', '**', '*.md'].map do |f|
-        [f[basedir.size + 1..-1], SafeYAML.load_file(f, safe: true)]
-      end.to_h
+      # init_file_to_front_matter_map is initializing the map with a nil value
+      # for every file that _should_ contain front matter as far as the
+      # navigation menu is concerned. Any nil values that remain after merging
+      # with the site_file_to_front_matter map will result in a validation
+      # error.
+      init_file_to_front_matter_map(basedir).merge(
+        site_file_to_front_matter(init_site(basedir)))
     end
 
     def self.validate_with_message_upon_error(front_matter)
@@ -23,17 +28,76 @@ module GuidesStyle18F
 
     def self.validate(front_matter)
       front_matter.map do |file, data|
-        next [file, ['no front matter defined']] unless data.instance_of? Hash
+        next [file, ['no front matter defined']] if data.nil?
         errors = missing_property_errors(data) + permalink_errors(data)
         [file, errors] unless errors.empty?
       end.compact.to_h
+    end
+
+    private
+
+    def self.init_site(basedir)
+      Dir.chdir(basedir) do
+        config = SafeYAML.load_file('_config.yml', safe: true)
+        adjust_config_paths(basedir, config)
+        site = Jekyll::Site.new(Jekyll.configuration(config))
+        site.reset
+        site.read
+        site
+      end
+    end
+
+    def self.adjust_config_paths(basedir, config)
+      source = config['source']
+      config['source'] = source.nil? ? basedir : File.join(basedir, source)
+      destination = config['destination']
+      destination = '_site' if destination.nil?
+      config['destination'] = File.join(basedir, destination)
+    end
+
+    def self.site_file_to_front_matter(site)
+      site_pages(site).map do |page|
+        [page.relative_path,  page.data]
+      end.to_h
+    end
+
+    # We're supporting two possible configurations:
+    #
+    # - a `pages/` directory in which documents appear as part of the regular
+    #   site.pages collection; we have to filter by page.relative_path, and we
+    #   do not assign a permalink so that validation (in a later step) will
+    #   ensure that each page has a permalink assigned
+    #
+    # - an actual `pages` collection, stored in a `_pages` directory; no
+    #   filtering is necessary, and we can reliably set the permalink to
+    #   page.url as a default
+    def self.site_pages(site)
+      pages = site.collections['pages']
+      if pages.nil?
+        site.pages.select do |page|
+          page.relative_path.start_with?('/pages') || page.url == '/'
+        end
+      else
+        pages.docs.each { |page| page.data['permalink'] ||= page.url }
+      end
+    end
+
+    def self.init_file_to_front_matter_map(basedir)
+      file_to_front_matter = {}
+      Dir.chdir(basedir) do
+        pages_dir = Dir.exist?('_pages') ? '_pages' : 'pages'
+        Dir[File.join(pages_dir, '**', '*')].each do |file_name|
+          next unless File.file?(file_name)
+          file_to_front_matter[file_name] = nil
+        end
+      end
+      file_to_front_matter
     end
 
     def self.missing_property_errors(data)
       properties = %w(title permalink)
       properties.map { |p| "no `#{p}:` property" unless data[p] }.compact
     end
-    private_class_method :missing_property_errors
 
     def self.permalink_errors(data)
       pl = data['permalink']
@@ -43,7 +107,6 @@ module GuidesStyle18F
       errors << "`permalink:` does not end with '/'" unless pl.end_with? '/'
       errors
     end
-    private_class_method :permalink_errors
   end
 
   # Automatically updates the `navigation:` field in _config.yml.
@@ -60,6 +123,8 @@ module GuidesStyle18F
     write_navigation_data_to_config_file config_path, nav_data
   end
 
+  private
+
   def self.update_navigation_data(nav_data, basedir)
     pages_data = pages_front_matter basedir
     children = pages_data['children'].map { |child| child['title'].downcase }
@@ -67,7 +132,6 @@ module GuidesStyle18F
     update_parent_nav_data nav_data, pages_data['parents']
     add_children_to_parents nav_data, pages_data['children']
   end
-  private_class_method :update_navigation_data
 
   def self.pages_front_matter(basedir)
     front_matter = FrontMatter.load basedir
@@ -79,7 +143,6 @@ module GuidesStyle18F
     %w(parents children).each { |category| pages_data[category] ||= [] }
     pages_data
   end
-  private_class_method :pages_front_matter
 
   def self.update_parent_nav_data(nav_data, parents)
     nav_by_title = nav_data_by_title nav_data
@@ -93,27 +156,29 @@ module GuidesStyle18F
       end
     end
   end
-  private_class_method :update_parent_nav_data
 
   def self.nav_data_by_title(nav_data)
     nav_data.map { |nav| [nav['text'].downcase, nav] }.to_h
   end
-  private_class_method :nav_data_by_title
 
   def self.page_nav(front_matter)
-    { 'text' => front_matter['title'],
-      'url' => "#{front_matter['permalink'].split('/').last}/",
+    url_components = front_matter['permalink'].split('/')[1..-1]
+    result = {
+      'text' => front_matter['title'],
+      'url' => "#{url_components.nil? ? '' : url_components.last}/",
       'internal' => true,
     }
+    # Delete the root URL so we don't have an empty `url:` property laying
+    # around.
+    result.delete 'url' if result['url'] == '/'
+    result
   end
-  private_class_method :page_nav
 
   def self.add_children_to_parents(nav_data, children)
     parents_by_title = nav_data_by_title nav_data
     children.each { |child| add_child_to_parent child, parents_by_title }
     nav_data
   end
-  private_class_method :add_children_to_parents
 
   def self.add_child_to_parent(child, parents_by_title)
     child_nav_data = page_nav child
@@ -128,7 +193,6 @@ module GuidesStyle18F
       children << child_nav_data
     end
   end
-  private_class_method :add_child_to_parent
 
   def self.parent(child, parents_by_title)
     parent = parents_by_title[child['parent'].downcase]
@@ -136,7 +200,6 @@ module GuidesStyle18F
     fail StandardError, 'Parent page not present in existing ' \
       "config: \"#{child['parent']}\" needed by: \"#{child['title']}\""
   end
-  private_class_method :parent
 
   def self.write_navigation_data_to_config_file(config_path, nav_data)
     lines = []
@@ -146,7 +209,6 @@ module GuidesStyle18F
     end
     File.write config_path, lines.join
   end
-  private_class_method :write_navigation_data_to_config_file
 
   def self.process_line(line, lines, nav_data, in_navigation = false)
     if !in_navigation && line.start_with?('navigation:')
@@ -160,5 +222,4 @@ module GuidesStyle18F
     end
     in_navigation
   end
-  private_class_method :process_line
 end
