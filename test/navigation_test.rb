@@ -161,7 +161,16 @@ module GuidesStyle18F
       write_config_without_collection
       move_home_page_and_create_external_page
       GuidesStyle18F.update_navigation_configuration testdir
-      assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
+
+      # Rather than add a `permalink:` to every page, we'll just update the
+      # expected `permalink:`s here to have a `pages/` prefix.
+      expected_nav_data = sorted_nav_data(NAV_DATA)
+      expected_nav_data['navigation'].map! do |nav|
+        nav = {}.merge(nav)
+        nav['url'] = "pages/#{nav['url']}" if nav['url']
+        nav
+      end
+      assert_result_matches_expected_config(expected_nav_data)
     end
 
     CONFIG_WITH_MISSING_PAGES = [
