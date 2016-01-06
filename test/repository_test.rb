@@ -28,7 +28,7 @@ module GuidesStyle18F
     def template_files
       @template_files ||=
         begin
-          FileUtils.mkdir_p File.join(repo_dir, 'pages')
+          FileUtils.mkdir_p File.join(repo_dir, '_pages')
           FileUtils.mkdir_p File.join(repo_dir, 'images')
           map_files_to_repo_dir TEMPLATE_FILES
         end
@@ -39,7 +39,10 @@ module GuidesStyle18F
     end
 
     def write_all_files
-      (template_files + nontemplate_files).each { |f| File.write f, '' }
+      (template_files + nontemplate_files).each do |file_name|
+        FileUtils.mkdir_p(File.dirname(file_name))
+        File.write(file_name, '')
+      end
     end
 
     GO_SCRIPT_BEFORE = <<GO_SCRIPT

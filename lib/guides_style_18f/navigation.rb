@@ -1,14 +1,68 @@
 # @author Mike Bland (michael.bland@gsa.gov)
 
+require 'jekyll'
 require 'safe_yaml'
 
 module GuidesStyle18F
   module FrontMatter
     def self.load(basedir)
-      Dir[File.join basedir, 'pages', '**', '*.md'].map do |f|
-        [f[basedir.size + 1..-1], SafeYAML.load_file(f, safe: true)]
+      init_file_to_front_matter_map(basedir).merge(
+        site_file_to_front_matter(init_site(basedir)))
+    end
+
+    def self.init_site(basedir)
+      Dir.chdir(basedir) do
+        config = SafeYAML.load_file('_config.yml', safe: true)
+        adjust_config_paths(basedir, config)
+        site = Jekyll::Site.new(Jekyll.configuration(config))
+        site.reset
+        site.read
+        site
+      end
+    end
+    private_class_method :init_site
+
+    def self.adjust_config_paths(basedir, config)
+      source = config['source']
+      config['source'] = source.nil? ? basedir : File.join(basedir, source)
+      destination = config['destination']
+      destination = '_site' if destination.nil?
+      config['destination'] = File.join(basedir, destination)
+    end
+    private_class_method :adjust_config_paths
+
+    def self.site_file_to_front_matter(site)
+      site_pages(site).map do |page|
+        page.data['permalink'] ||= page.url
+        [page.relative_path,  page.data]
       end.to_h
     end
+    private_class_method :site_file_to_front_matter
+
+    def self.site_pages(site)
+      pages = site.collections['pages']
+      if pages.nil?
+        site.pages.select do |page|
+          page.relative_path.start_with?('/pages') || page.url == '/'
+        end
+      else
+        pages.docs
+      end
+    end
+    private_class_method :site_pages
+
+    def self.init_file_to_front_matter_map(basedir)
+      file_to_front_matter = {}
+      Dir.chdir(basedir) do
+        pages_dir = Dir.exist?('_pages') ? '_pages' : 'pages'
+        Dir[File.join(pages_dir, '**', '*')].each do |file_name|
+          next unless File.file?(file_name)
+          file_to_front_matter[file_name] = file_to_front_matter[file_name]
+        end
+      end
+      file_to_front_matter
+    end
+    private_class_method :init_file_to_front_matter_map
 
     def self.validate_with_message_upon_error(front_matter)
       files_with_errors = validate front_matter
@@ -23,7 +77,7 @@ module GuidesStyle18F
 
     def self.validate(front_matter)
       front_matter.map do |file, data|
-        next [file, ['no front matter defined']] unless data.instance_of? Hash
+        next [file, ['no front matter defined']] if data.nil?
         errors = missing_property_errors(data) + permalink_errors(data)
         [file, errors] unless errors.empty?
       end.compact.to_h
@@ -101,10 +155,13 @@ module GuidesStyle18F
   private_class_method :nav_data_by_title
 
   def self.page_nav(front_matter)
-    { 'text' => front_matter['title'],
+    result = {
+      'text' => front_matter['title'],
       'url' => "#{front_matter['permalink'].split('/').last}/",
       'internal' => true,
     }
+    result.delete 'url' if result['url'] == '/'
+    result
   end
   private_class_method :page_nav
 

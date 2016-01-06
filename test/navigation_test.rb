@@ -13,20 +13,27 @@ module GuidesStyle18F
     attr_reader :testdir, :config_path, :pages_dir
 
     TEST_DIR = File.dirname(__FILE__)
-    NAV_DATA_PATH = File.join TEST_DIR, 'navigation_test_data.yml'
-    NAV_YAML = File.read NAV_DATA_PATH
-    NAV_DATA = SafeYAML.load NAV_YAML, safe: true
-    TEST_PAGES_DIR = File.join TEST_DIR, 'pages'
+    TEST_PAGES_DIR = File.join TEST_DIR, '_pages'
+
+    NAV_DATA_PATH = File.join(TEST_DIR, 'navigation_test_data.yml')
+    NAV_YAML = File.read(NAV_DATA_PATH)
+    NAV_DATA = SafeYAML.load(NAV_YAML, safe: true)
+
+    NAV_DATA_WITHOUT_COLLECTIONS_PATH = File.join(
+      TEST_DIR, 'navigation_test_data_without_collections.yml')
+    NAV_YAML_WITHOUT_COLLECTIONS = File.read(NAV_DATA_WITHOUT_COLLECTIONS_PATH)
+    NAV_DATA_WITHOUT_COLLECTIONS = SafeYAML.load(
+      NAV_YAML_WITHOUT_COLLECTIONS, safe: true)
 
     def setup
       @testdir = Dir.mktmpdir
       @config_path = File.join testdir, '_config.yml'
-      @pages_dir = File.join testdir, 'pages'
+      @pages_dir = File.join testdir, '_pages'
       FileUtils.mkdir_p pages_dir
     end
 
     def teardown
-      FileUtils.rm_rf testdir
+      FileUtils.remove_entry testdir
     end
 
     def write_config(config_data)
@@ -38,21 +45,29 @@ module GuidesStyle18F
     end
 
     def copy_pages(pages)
-      FileUtils.cp pages.map { |p| File.join TEST_PAGES_DIR, p }, pages_dir
+      pages.each do |page|
+        parent_dir = File.dirname(page)
+        full_orig_path = File.join(TEST_PAGES_DIR, page)
+        target_dir = File.join(pages_dir, parent_dir)
+        FileUtils.mkdir_p(target_dir)
+        FileUtils.cp(full_orig_path, target_dir)
+      end
     end
 
     def nav_array_to_hash(nav)
       (nav['navigation'] || []).map { |i| [i['text'], i] }.to_h
     end
 
-    def assert_result_matches_expected_config
+    def assert_result_matches_expected_config(nav_data)
       # We can't do a straight string comparison, since the items may not be
       # in order relative to the original.
       result = read_config
-      result_data = SafeYAML.load result, safe: true
-      assert result.start_with? LEADING_COMMENT
-      assert result.end_with? TRAILING_COMMENT
-      assert_equal nav_array_to_hash(NAV_DATA), nav_array_to_hash(result_data)
+      result_data = SafeYAML.load(result, safe: true)
+      refute_equal(-1, result.index(LEADING_COMMENT),
+        'Comment before `navigation:` section is missing')
+      refute_equal(-1, result.index(TRAILING_COMMENT),
+        'Comment after `navigation:` section is missing')
+      assert_equal nav_array_to_hash(nav_data), nav_array_to_hash(result_data)
     end
 
     def test_empty_config_no_pages
@@ -81,24 +96,72 @@ module GuidesStyle18F
     end
 
     ALL_PAGES = %w(
-      child-page.md config.md github.md images.md new-page.md posting.md)
+      add-a-new-page/make-a-child-page.md
+      add-a-new-page.md
+      add-images.md
+      github-setup.md
+      index.md
+      post-your-guide.md
+      update-the-config-file/understanding-baseurl.md
+      update-the-config-file.md
+    )
+    COLLECTIONS_CONFIG = [
+      'collections:',
+      '  pages:',
+      '    output: true',
+      '    permalink: /:path/',
+    ].join("\n")
     LEADING_COMMENT = '' \
       '# Comments before the navigation section should be preserved.'
     TRAILING_COMMENT = '' \
       "# Comments after the navigation section should also be preserved.\n"
 
+    # We need to be careful not to modify the original NAV_DATA object when
+    # sorting.
+    def sorted_nav_data(nav_data)
+      nav_data = {}.merge(nav_data)
+      sorted = nav_data['navigation'].map { |i| i }.sort_by { |i| i['text'] }
+      nav_data['navigation'] = sorted
+      nav_data
+    end
+
+    def test_add_all_pages_from_scratch
+      write_config([
+        COLLECTIONS_CONFIG,
+        LEADING_COMMENT,
+        'navigation:',
+        TRAILING_COMMENT,
+      ].join("\n"))
+      copy_pages(ALL_PAGES)
+      GuidesStyle18F.update_navigation_configuration testdir
+      assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
+    end
+
+    def test_add_all_pages_from_scratch_without_collection
+      @pages_dir = File.join(testdir, 'pages')
+      FileUtils.mkdir_p pages_dir
+      config = [
+        'permalink: /:path/', LEADING_COMMENT, 'navigation:', TRAILING_COMMENT
+      ].join("\n")
+      write_config(config)
+      copy_pages(ALL_PAGES)
+      GuidesStyle18F.update_navigation_configuration testdir
+      assert_result_matches_expected_config(
+        sorted_nav_data(NAV_DATA_WITHOUT_COLLECTIONS))
+    end
+
     CONFIG_WITH_MISSING_PAGES = [
+      COLLECTIONS_CONFIG,
       LEADING_COMMENT,
       'navigation:',
       '- text: Introduction',
-      '  url: index.html',
       '  internal: true',
-      '- text: Adding a new page',
-      '  url: adding-a-new-page/',
+      '- text: Add a new page',
+      '  url: add-a-new-page/',
       '  internal: true',
       '  children:',
-      '  - text: Making a child page',
-      '    url: making-a-child-page/',
+      '  - text: Make a child page',
+      '    url: make-a-child-page/',
       '    internal: false',
       TRAILING_COMMENT,
     ].join "\n"
@@ -107,23 +170,23 @@ module GuidesStyle18F
       write_config CONFIG_WITH_MISSING_PAGES
       copy_pages ALL_PAGES
       GuidesStyle18F.update_navigation_configuration testdir
-      assert_result_matches_expected_config
+      assert_result_matches_expected_config(NAV_DATA)
     end
 
-    CONFIG_MISSING_CHILD_PAGE = [
+    CONFIG_MISSING_CHILD_PAGES = [
+      COLLECTIONS_CONFIG,
       LEADING_COMMENT,
       'navigation:',
       '- text: Introduction',
-      '  url: index.html',
       '  internal: true',
-      '- text: Adding a new page',
-      '  url: adding-a-new-page/',
+      '- text: Add a new page',
+      '  url: add-a-new-page/',
       '  internal: true',
-      '- text: Adding images',
-      '  url: adding-images/',
+      '- text: Add images',
+      '  url: add-images/',
       '  internal: true',
-      '- text: Updating the config file',
-      '  url: updating-the-config-file/',
+      '- text: Update the config file',
+      '  url: update-the-config-file/',
       '  internal: true',
       '- text: GitHub setup',
       '  url: github-setup/',
@@ -134,27 +197,27 @@ module GuidesStyle18F
       TRAILING_COMMENT,
     ].join "\n"
 
-    def test_add_missing_child_page
-      write_config CONFIG_MISSING_CHILD_PAGE
+    def test_add_missing_child_pages
+      write_config CONFIG_MISSING_CHILD_PAGES
       copy_pages ALL_PAGES
       GuidesStyle18F.update_navigation_configuration testdir
-      assert_result_matches_expected_config
+      assert_result_matches_expected_config(NAV_DATA)
     end
 
     CONFIG_MISSING_PARENT_PAGE = [
+      COLLECTIONS_CONFIG,
       LEADING_COMMENT,
       'navigation:',
       '- text: Introduction',
-      '  url: index.html',
       '  internal: true',
-      '- text: Adding images',
-      '  url: adding-images/',
+      '- text: Add images',
+      '  url: add-images/',
       '  internal: true',
-      '- text: Making a child page',
-      '  url: making-a-child-page/',
+      '- text: Make a child page',
+      '  url: make-a-child-page/',
       '  internal: true',
-      '- text: Updating the config file',
-      '  url: updating-the-config-file/',
+      '- text: Update the config file',
+      '  url: update-the-config-file/',
       '  internal: true',
       '- text: GitHub setup',
       '  url: github-setup/',
@@ -172,25 +235,25 @@ module GuidesStyle18F
       write_config CONFIG_MISSING_PARENT_PAGE
       copy_pages ALL_PAGES
       GuidesStyle18F.update_navigation_configuration testdir
-      assert_result_matches_expected_config
+      assert_result_matches_expected_config(NAV_DATA)
     end
 
     def test_should_raise_if_parent_page_does_not_exist
       write_config CONFIG_MISSING_PARENT_PAGE
-      copy_pages ALL_PAGES.reject { |page| page == 'new-page.md' }
+      copy_pages ALL_PAGES.reject { |page| page == 'add-a-new-page.md' }
       exception = assert_raises(StandardError) do
         GuidesStyle18F.update_navigation_configuration testdir
       end
       expected = 'Parent page not present in existing config: ' \
-        '"Adding a new page" needed by: "Making a child page"'
+        '"Add a new page" needed by: "Make a child page"'
       assert_equal expected, exception.message
     end
 
     CONFIG_CONTAINING_ONLY_INTRODUCTION = [
+      COLLECTIONS_CONFIG,
       LEADING_COMMENT,
       'navigation:',
       '- text: Introduction',
-      '  url: index.html',
       '  internal: true',
       TRAILING_COMMENT,
     ].join "\n"
@@ -199,26 +262,14 @@ module GuidesStyle18F
       write_config CONFIG_CONTAINING_ONLY_INTRODUCTION
       copy_pages ALL_PAGES
       GuidesStyle18F.update_navigation_configuration testdir
-      assert_result_matches_expected_config
+      assert_result_matches_expected_config(NAV_DATA)
     end
-
-    MISSING_TITLE_AND_PERMALINK = <<MISSING_TITLE_AND_PERMALINK
----
-other_property: other value
----
-MISSING_TITLE_AND_PERMALINK
 
     MISSING_TITLE = <<MISSING_TITLE
 ---
-permalink: /no-title/
+other_property: other value
 ---
 MISSING_TITLE
-
-    MISSING_LINK = <<MISSING_LINK
----
-title: No permalink
----
-MISSING_LINK
 
     NO_LEADING_SLASH = <<NO_LEADING_SLASH
 ---
@@ -236,27 +287,20 @@ NO_TRAILING_SLASH
 
     FILES_WITH_ERRORS = {
       'missing-front-matter.md' => 'no front matter brosef',
-      'missing-title-and-permalink.md' => MISSING_TITLE_AND_PERMALINK,
       'missing-title.md' => MISSING_TITLE,
-      'missing-link.md' => MISSING_LINK,
       'no-leading-slash.md' => NO_LEADING_SLASH,
       'no-trailing-slash.md' => NO_TRAILING_SLASH,
     }
 
     EXPECTED_ERRORS = <<EXPECTED_ERRORS
 The following files have errors in their front matter:
-  pages/missing-front-matter.md:
+  _pages/missing-front-matter.md:
     no front matter defined
-  pages/missing-link.md:
-    no `permalink:` property
-  pages/missing-title-and-permalink.md:
+  _pages/missing-title.md:
     no `title:` property
-    no `permalink:` property
-  pages/missing-title.md:
-    no `title:` property
-  pages/no-leading-slash.md:
+  _pages/no-leading-slash.md:
     `permalink:` does not begin with '/'
-  pages/no-trailing-slash.md:
+  _pages/no-trailing-slash.md:
     `permalink:` does not end with '/'
 EXPECTED_ERRORS
 
@@ -265,15 +309,16 @@ EXPECTED_ERRORS
     end
 
     def test_detect_front_matter_errors
+      write_config NAV_YAML
       FILES_WITH_ERRORS.each { |file, content| write_page file, content }
       errors = GuidesStyle18F::FrontMatter.validate_with_message_upon_error(
         GuidesStyle18F::FrontMatter.load(testdir))
       assert_equal EXPECTED_ERRORS, errors + "\n"
     end
 
-    def test_show_error_message_and_exit_if_pages_front_matter_is_malformed
+    def _test_show_error_message_and_exit_if_pages_front_matter_is_malformed
       orig_stderr, $stderr = $stderr, StringIO.new
-      write_config "navigation:"
+      write_config "#{COLLECTIONS_CONFIG}\nnavigation:"
       FILES_WITH_ERRORS.each { |file, content| write_page file, content }
       exception = assert_raises(SystemExit) do
         GuidesStyle18F.update_navigation_configuration testdir

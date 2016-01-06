@@ -5,13 +5,13 @@ require 'fileutils'
 
 module GuidesStyle18F
   TEMPLATE_FILES = %w(
-    pages/baseurl.md
-    pages/child-page.md
-    pages/config.md
-    pages/github.md
-    pages/images.md
-    pages/new-page.md
-    pages/posting.md
+    _pages/add-a-new-page/make-a-child-page.md
+    _pages/add-a-new-page.md
+    _pages/add-images.md
+    _pages/github-setup.md
+    _pages/post-your-guide.md
+    _pages/update-the-config-file/understanding-baseurl.md
+    _pages/update-the-config-file.md
     images/18f-pages.png
     images/description.png
     images/gh-add-guide.png

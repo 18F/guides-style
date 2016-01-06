@@ -1,7 +1,4 @@
-collections:
-  pages:
-    output: true
-    permalink: /:path/
+permalink: /:path/
 
 # Comments before the navigation section should be preserved.
 navigation:
