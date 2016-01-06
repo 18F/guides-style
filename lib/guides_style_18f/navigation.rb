@@ -33,7 +33,6 @@ module GuidesStyle18F
 
     def self.site_file_to_front_matter(site)
       site_pages(site).map do |page|
-        page.data['permalink'] ||= page.url
         [page.relative_path,  page.data]
       end.to_h
     end
@@ -46,7 +45,7 @@ module GuidesStyle18F
           page.relative_path.start_with?('/pages') || page.url == '/'
         end
       else
-        pages.docs
+        pages.docs.each { |page| page.data['permalink'] ||= page.url }
       end
     end
     private_class_method :site_pages

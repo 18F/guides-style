@@ -157,20 +157,22 @@ module GuidesStyle18F
       ].join("\n"))
     end
 
+    def add_permalinks(pages)
+      pages.each do |page|
+        next if page == 'index.md'
+        path = File.join(pages_dir, page)
+        front_matter = SafeYAML.load_file(path, safe: true)
+        front_matter['permalink'] = "/#{page.sub(/\.md$/, '')}/"
+        File.write(path, "#{front_matter.to_yaml}\n---")
+      end
+    end
+
     def test_add_all_pages_from_scratch_without_collection
       write_config_without_collection
       move_home_page_and_create_external_page
+      add_permalinks(ALL_PAGES)
       GuidesStyle18F.update_navigation_configuration testdir
-
-      # Rather than add a `permalink:` to every page, we'll just update the
-      # expected `permalink:`s here to have a `pages/` prefix.
-      expected_nav_data = sorted_nav_data(NAV_DATA)
-      expected_nav_data['navigation'].map! do |nav|
-        nav = {}.merge(nav)
-        nav['url'] = "pages/#{nav['url']}" if nav['url']
-        nav
-      end
-      assert_result_matches_expected_config(expected_nav_data)
+      assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
     end
 
     CONFIG_WITH_MISSING_PAGES = [
