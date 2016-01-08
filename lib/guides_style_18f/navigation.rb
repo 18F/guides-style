@@ -119,46 +119,33 @@ module GuidesStyle18F
     config_data = SafeYAML.load_file config_path, safe: true
     return unless config_data
     nav_data = config_data['navigation'] || []
-    nav_data = update_navigation_data nav_data, basedir
-    write_navigation_data_to_config_file config_path, nav_data
+    update_navigation_data(nav_data, basedir)
+    write_navigation_data_to_config_file(config_path, nav_data)
   end
 
   private
 
   def self.update_navigation_data(nav_data, basedir)
-    pages_data = pages_front_matter basedir
-    children = pages_data['children'].map { |child| child['title'].downcase }
-    nav_data.reject! { |nav| children.include? nav['text'].downcase }
-    update_parent_nav_data nav_data, pages_data['parents']
-    add_children_to_parents nav_data, pages_data['children']
+    original = map_nav_items_by_url('/', nav_data).to_h
+    updated = updated_nav_data(basedir)
+    remove_stale_nav_entries(nav_data, original, updated)
+    updated.map { |url, nav| apply_nav_update(url, nav, nav_data, original) }
+    check_for_orphaned_items(nav_data)
   end
 
-  def self.pages_front_matter(basedir)
+  def self.map_nav_items_by_url(parent_url, nav_data)
+    nav_data.flat_map do |nav|
+      url = File.join('', parent_url, nav['url'] || '')
+      [[url, nav]].concat(map_nav_items_by_url(url, nav['children'] || []))
+    end
+  end
+
+  def self.updated_nav_data(basedir)
     front_matter = FrontMatter.load basedir
     errors = FrontMatter.validate_with_message_upon_error front_matter
     abort errors + "\n_config.yml not updated" if errors
-    pages_data = front_matter.values.group_by do |fm|
-      fm['parent'].nil? ? 'parents' : 'children'
-    end
-    %w(parents children).each { |category| pages_data[category] ||= [] }
-    pages_data
-  end
-
-  def self.update_parent_nav_data(nav_data, parents)
-    nav_by_title = nav_data_by_title nav_data
-    parents.each do |page|
-      page_nav = page_nav page
-      title = page_nav['text'].downcase
-      if nav_by_title.member? title
-        nav_by_title[title].merge! page_nav
-      else
-        nav_data << page_nav
-      end
-    end
-  end
-
-  def self.nav_data_by_title(nav_data)
-    nav_data.map { |nav| [nav['text'].downcase, nav] }.to_h
+    front_matter.values.sort_by { |fm| fm['permalink'] }
+      .map { |fm| [fm['permalink'], page_nav(fm)] }.to_h
   end
 
   def self.page_nav(front_matter)
@@ -174,31 +161,42 @@ module GuidesStyle18F
     result
   end
 
-  def self.add_children_to_parents(nav_data, children)
-    parents_by_title = nav_data_by_title nav_data
-    children.each { |child| add_child_to_parent child, parents_by_title }
-    nav_data
+  def self.remove_stale_nav_entries(nav_data, original, updated)
+    # Remove old entries whose pages have been deleted
+    original.each do |url, nav|
+      nav['delete'] = true if !updated.member?(url) && nav['internal']
+    end
+    original.delete_if { |_url, nav| nav['delete'] }
+    nav_data.delete_if { |nav| nav['delete'] }
   end
 
-  def self.add_child_to_parent(child, parents_by_title)
-    child_nav_data = page_nav child
-    title = child_nav_data['text'].downcase
-    parent = parent child, parents_by_title
-    children = parent['children'] ||= []
-    children_by_title = children.map { |c| [c['text'].downcase, c] }.to_h
-
-    if children_by_title.member? title
-      children_by_title[title].merge! child_nav_data
+  def self.apply_nav_update(url, nav, nav_data, original)
+    orig = original[url]
+    if orig.nil?
+      apply_new_nav_item(url, nav, nav_data, original)
     else
-      children << child_nav_data
+      orig['text'] = nav['text']
     end
   end
 
-  def self.parent(child, parents_by_title)
-    parent = parents_by_title[child['parent'].downcase]
-    return parent unless parent.nil?
-    fail StandardError, 'Parent page not present in existing ' \
-      "config: \"#{child['parent']}\" needed by: \"#{child['title']}\""
+  def self.apply_new_nav_item(url, nav, nav_data, original)
+    parent_url = File.dirname(url || '/')
+    parent = original["#{parent_url}/"]
+    if parent_url == '/'
+      nav_data << (original[url] = nav)
+    elsif parent.nil?
+      nav_data << { orphan_url: url }
+    else
+      (parent['children'] ||= []) << nav
+    end
+  end
+
+  def self.check_for_orphaned_items(nav_data)
+    orphans = nav_data.map { |nav| nav[:orphan_url] }.compact
+    unless orphans.empty?
+      fail(StandardError, "Parent pages missing for the following:\n  " +
+        orphans.join("\n  "))
+    end
   end
 
   def self.write_navigation_data_to_config_file(config_path, nav_data)
@@ -212,7 +210,7 @@ module GuidesStyle18F
 
   def self.process_line(line, lines, nav_data, in_navigation = false)
     if !in_navigation && line.start_with?('navigation:')
-      lines << line << nav_data.to_yaml["---\n".size..-1]
+      lines << line << format_navigation_section(nav_data)
       in_navigation = true
     elsif in_navigation
       in_navigation = line.start_with?(' ') || line.start_with?('-')
@@ -221,5 +219,11 @@ module GuidesStyle18F
       lines << line
     end
     in_navigation
+  end
+
+  YAML_PREFIX = "---\n"
+
+  def self.format_navigation_section(nav_data)
+    nav_data.empty? ? '' : nav_data.to_yaml[YAML_PREFIX.size..-1]
   end
 end
