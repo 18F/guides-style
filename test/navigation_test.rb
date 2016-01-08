@@ -182,6 +182,27 @@ module GuidesStyle18F
       assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
     end
 
+    CONFIG_WITH_EXTERNAL_PAGE = [
+      COLLECTIONS_CONFIG,
+      LEADING_COMMENT,
+      'navigation:',
+      '- text: Link to the 18F/guides-style repo',
+      '  url: https://github.com/18F/guides-style',
+      TRAILING_COMMENT,
+    ].join("\n")
+
+    def test_do_not_remove_external_page_entries
+      write_config(CONFIG_WITH_EXTERNAL_PAGE)
+      copy_pages(ALL_PAGES)
+      GuidesStyle18F.update_navigation_configuration testdir
+      expected_data = sorted_nav_data(NAV_DATA)
+      expected_data['navigation'].unshift(
+        'text' => 'Link to the 18F/guides-style repo',
+        'url' => 'https://github.com/18F/guides-style',
+      )
+      assert_result_matches_expected_config(expected_data)
+    end
+
     CONFIG_WITH_MISSING_PAGES = [
       COLLECTIONS_CONFIG,
       LEADING_COMMENT,
@@ -348,17 +369,25 @@ EXPECTED_ERRORS
       assert_equal EXPECTED_ERRORS, errors + "\n"
     end
 
-    def test_show_error_message_and_exit_if_pages_front_matter_is_malformed
-      orig_stderr, $stderr = $stderr, StringIO.new
-      write_config "#{COLLECTIONS_CONFIG}\nnavigation:"
-      FILES_WITH_ERRORS.each { |file, content| write_page file, content }
-      exception = assert_raises(SystemExit) do
-        GuidesStyle18F.update_navigation_configuration testdir
-      end
-      assert_equal 1, exception.status
-      assert_equal EXPECTED_ERRORS + "_config.yml not updated\n", $stderr.string
+    def capture_stderr
+      orig_stderr = $stderr
+      $stderr = StringIO.new
+      yield
     ensure
       $stderr = orig_stderr
+    end
+
+    def test_show_error_message_and_exit_if_pages_front_matter_is_malformed
+      capture_stderr do
+        write_config "#{COLLECTIONS_CONFIG}\nnavigation:"
+        FILES_WITH_ERRORS.each { |file, content| write_page file, content }
+        exception = assert_raises(SystemExit) do
+          GuidesStyle18F.update_navigation_configuration testdir
+        end
+        assert_equal 1, exception.status
+        assert_equal(EXPECTED_ERRORS + "_config.yml not updated\n",
+          $stderr.string)
+      end
     end
   end
   # rubocop:enable ClassLength
