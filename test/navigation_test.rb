@@ -39,7 +39,7 @@ module GuidesStyle18F
     end
 
     def write_config(config_data, with_collections: true)
-      prefix = with_collections ? COLLECTIONS_CONFIG : ''
+      prefix = with_collections ? "#{COLLECTIONS_CONFIG}\n" : ''
       File.write(config_path, "#{prefix}#{config_data}")
     end
 
@@ -88,14 +88,13 @@ module GuidesStyle18F
     def test_config_with_nav_data_but_no_pages
       write_config NAV_YAML
       GuidesStyle18F.update_navigation_configuration @testdir
-      assert_equal "#{COLLECTIONS_CONFIG}#{NAV_YAML}", read_config
-    end
-
-    def test_all_pages_with_existing_data
-      write_config NAV_YAML
-      copy_pages ALL_PAGES
-      GuidesStyle18F.update_navigation_configuration testdir
-      assert_equal "#{COLLECTIONS_CONFIG}#{NAV_YAML}", read_config
+      expected = [
+        COLLECTIONS_CONFIG,
+        LEADING_COMMENT,
+        'navigation:',
+        TRAILING_COMMENT,
+      ].join("\n")
+      assert_equal expected, read_config
     end
 
     ALL_PAGES = %w(
@@ -108,6 +107,14 @@ module GuidesStyle18F
       update-the-config-file/understanding-baseurl.md
       update-the-config-file.md
     )
+
+    def test_all_pages_with_existing_data
+      write_config NAV_YAML
+      copy_pages ALL_PAGES
+      GuidesStyle18F.update_navigation_configuration testdir
+      assert_equal "#{COLLECTIONS_CONFIG}\n#{NAV_YAML}", read_config
+    end
+
     LEADING_COMMENT = '' \
       '# Comments before the navigation section should be preserved.'
     TRAILING_COMMENT = '' \
@@ -175,6 +182,27 @@ module GuidesStyle18F
       assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
     end
 
+    CONFIG_WITH_EXTERNAL_PAGE = [
+      COLLECTIONS_CONFIG,
+      LEADING_COMMENT,
+      'navigation:',
+      '- text: Link to the 18F/guides-style repo',
+      '  url: https://github.com/18F/guides-style',
+      TRAILING_COMMENT,
+    ].join("\n")
+
+    def test_do_not_remove_external_page_entries
+      write_config(CONFIG_WITH_EXTERNAL_PAGE)
+      copy_pages(ALL_PAGES)
+      GuidesStyle18F.update_navigation_configuration testdir
+      expected_data = sorted_nav_data(NAV_DATA)
+      expected_data['navigation'].unshift(
+        'text' => 'Link to the 18F/guides-style repo',
+        'url' => 'https://github.com/18F/guides-style',
+      )
+      assert_result_matches_expected_config(expected_data)
+    end
+
     CONFIG_WITH_MISSING_PAGES = [
       COLLECTIONS_CONFIG,
       LEADING_COMMENT,
@@ -187,7 +215,7 @@ module GuidesStyle18F
       '  children:',
       '  - text: Make a child page',
       '    url: make-a-child-page/',
-      '    internal: false',
+      '    internal: true',
       TRAILING_COMMENT,
     ].join "\n"
 
@@ -269,8 +297,8 @@ module GuidesStyle18F
       exception = assert_raises(StandardError) do
         GuidesStyle18F.update_navigation_configuration testdir
       end
-      expected = 'Parent page not present in existing config: ' \
-        '"Add a new page" needed by: "Make a child page"'
+      expected = "Parent pages missing for the following:\n  " \
+        '/add-a-new-page/make-a-child-page/'
       assert_equal expected, exception.message
     end
 
@@ -341,17 +369,25 @@ EXPECTED_ERRORS
       assert_equal EXPECTED_ERRORS, errors + "\n"
     end
 
-    def _test_show_error_message_and_exit_if_pages_front_matter_is_malformed
-      orig_stderr, $stderr = $stderr, StringIO.new
-      write_config "#{COLLECTIONS_CONFIG}\nnavigation:"
-      FILES_WITH_ERRORS.each { |file, content| write_page file, content }
-      exception = assert_raises(SystemExit) do
-        GuidesStyle18F.update_navigation_configuration testdir
-      end
-      assert_equal 1, exception.status
-      assert_equal EXPECTED_ERRORS + "_config.yml not updated\n", $stderr.string
+    def capture_stderr
+      orig_stderr = $stderr
+      $stderr = StringIO.new
+      yield
     ensure
       $stderr = orig_stderr
+    end
+
+    def test_show_error_message_and_exit_if_pages_front_matter_is_malformed
+      capture_stderr do
+        write_config "#{COLLECTIONS_CONFIG}\nnavigation:"
+        FILES_WITH_ERRORS.each { |file, content| write_page file, content }
+        exception = assert_raises(SystemExit) do
+          GuidesStyle18F.update_navigation_configuration testdir
+        end
+        assert_equal 1, exception.status
+        assert_equal(EXPECTED_ERRORS + "_config.yml not updated\n",
+          $stderr.string)
+      end
     end
   end
   # rubocop:enable ClassLength
