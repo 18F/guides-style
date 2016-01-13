@@ -140,6 +140,30 @@ module GuidesStyle18F
       assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
     end
 
+    def add_a_grandchild_page(nav_data, parent_text, child_text,
+      grandchild_text, grandchild_url)
+      parent = nav_data.detect { |nav| nav['text'] == parent_text }
+      child = parent['children'].detect { |nav| nav['text'] == child_text }
+      (child['children'] ||= []) << {
+        'text' => grandchild_text, 'url' => grandchild_url, 'internal' => true
+      }
+    end
+
+    def test_remove_stale_config_entries
+      nav_data = SafeYAML.load(NAV_YAML, safe: true)
+      add_a_grandchild_page(nav_data['navigation'], 'Add a new page',
+        'Make a child page', 'Make a grandchild page', 'grandchild-page/')
+
+      # We have to slice off the leading `---\n` of the YAML, and the trailing
+      # newline.
+      write_config([
+        LEADING_COMMENT, nav_data.to_yaml[4..-2], TRAILING_COMMENT
+      ].join("\n"))
+      copy_pages ALL_PAGES
+      GuidesStyle18F.update_navigation_configuration testdir
+      assert_equal "#{COLLECTIONS_CONFIG}\n#{NAV_YAML}", read_config
+    end
+
     def write_config_without_collection
       # Use the `pages/` dir instead of `_pages`. Set the default permalink
       # for all the pages so we don't need to manually update every page.

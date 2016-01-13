@@ -119,111 +119,121 @@ module GuidesStyle18F
     config_data = SafeYAML.load_file config_path, safe: true
     return unless config_data
     nav_data = config_data['navigation'] || []
-    update_navigation_data(nav_data, basedir)
-    write_navigation_data_to_config_file(config_path, nav_data)
+    NavigationMenu.update_navigation_data(nav_data, basedir)
+    NavigationMenu.write_navigation_data_to_config_file(config_path, nav_data)
   end
 
   private
 
-  def self.update_navigation_data(nav_data, basedir)
-    original = map_nav_items_by_url('/', nav_data).to_h
-    updated = updated_nav_data(basedir)
-    remove_stale_nav_entries(nav_data, original, updated)
-    updated.map { |url, nav| apply_nav_update(url, nav, nav_data, original) }
-    check_for_orphaned_items(nav_data)
-  end
-
-  def self.map_nav_items_by_url(parent_url, nav_data)
-    nav_data.flat_map do |nav|
-      url = File.join('', parent_url, nav['url'] || '')
-      [[url, nav]].concat(map_nav_items_by_url(url, nav['children'] || []))
+  module NavigationMenu
+    def self.update_navigation_data(nav_data, basedir)
+      original = map_nav_items_by_url('/', nav_data).to_h
+      updated = updated_nav_data(basedir)
+      remove_stale_nav_entries(nav_data, original, updated)
+      updated.map { |url, nav| apply_nav_update(url, nav, nav_data, original) }
+      check_for_orphaned_items(nav_data)
     end
-  end
 
-  def self.updated_nav_data(basedir)
-    front_matter = FrontMatter.load basedir
-    errors = FrontMatter.validate_with_message_upon_error front_matter
-    abort errors + "\n_config.yml not updated" if errors
-    front_matter.values.sort_by { |fm| fm['permalink'] }
-      .map { |fm| [fm['permalink'], page_nav(fm)] }.to_h
-  end
-
-  def self.page_nav(front_matter)
-    url_components = front_matter['permalink'].split('/')[1..-1]
-    result = {
-      'text' => front_matter['title'],
-      'url' => "#{url_components.nil? ? '' : url_components.last}/",
-      'internal' => true,
-    }
-    # Delete the root URL so we don't have an empty `url:` property laying
-    # around.
-    result.delete 'url' if result['url'] == '/'
-    result
-  end
-
-  def self.remove_stale_nav_entries(nav_data, original, updated)
-    # Remove old entries whose pages have been deleted
-    original.each do |url, nav|
-      nav['delete'] = true if !updated.member?(url) && nav['internal']
+    def self.map_nav_items_by_url(parent_url, nav_data)
+      nav_data.flat_map do |nav|
+        url = File.join('', parent_url, nav['url'] || '')
+        [[url, nav]].concat(map_nav_items_by_url(url, nav['children'] || []))
+      end
     end
-    original.delete_if { |_url, nav| nav['delete'] }
-    nav_data.delete_if { |nav| nav['delete'] }
-  end
 
-  def self.apply_nav_update(url, nav, nav_data, original)
-    orig = original[url]
-    if orig.nil?
-      apply_new_nav_item(url, nav, nav_data, original)
-    else
-      orig['text'] = nav['text']
+    def self.updated_nav_data(basedir)
+      front_matter = FrontMatter.load basedir
+      errors = FrontMatter.validate_with_message_upon_error front_matter
+      abort errors + "\n_config.yml not updated" if errors
+      front_matter.values.sort_by { |fm| fm['permalink'] }
+        .map { |fm| [fm['permalink'], page_nav(fm)] }.to_h
     end
-  end
 
-  def self.apply_new_nav_item(url, nav, nav_data, original)
-    parent_url = File.dirname(url || '/')
-    parent = original["#{parent_url}/"]
-    if parent_url == '/'
-      nav_data << (original[url] = nav)
-    elsif parent.nil?
-      nav_data << { orphan_url: url }
-    else
-      (parent['children'] ||= []) << nav
+    def self.page_nav(front_matter)
+      url_components = front_matter['permalink'].split('/')[1..-1]
+      result = {
+        'text' => front_matter['title'],
+        'url' => "#{url_components.nil? ? '' : url_components.last}/",
+        'internal' => true,
+      }
+      # Delete the root URL so we don't have an empty `url:` property laying
+      # around.
+      result.delete 'url' if result['url'] == '/'
+      result
     end
-  end
 
-  def self.check_for_orphaned_items(nav_data)
-    orphans = nav_data.map { |nav| nav[:orphan_url] }.compact
-    unless orphans.empty?
-      fail(StandardError, "Parent pages missing for the following:\n  " +
-        orphans.join("\n  "))
+    def self.remove_stale_nav_entries(nav_data, original, updated)
+      # Remove old entries whose pages have been deleted
+      original.each do |url, nav|
+        nav['delete'] = true if !updated.member?(url) && nav['internal']
+      end
+      original.delete_if { |_url, nav| nav['delete'] }
+      nav_data.delete_if { |nav| nav['delete'] }
+      nav_data.each { |nav| remove_stale_children(nav) }
     end
-  end
 
-  def self.write_navigation_data_to_config_file(config_path, nav_data)
-    lines = []
-    in_navigation = false
-    open(config_path).each_line do |line|
-      in_navigation = process_line line, lines, nav_data, in_navigation
+    def self.remove_stale_children(parent)
+      children = (parent['children'] || [])
+      children.delete_if { |nav| nav['delete'] }
+      parent.delete 'children' if children.empty?
+      children.each { |child| remove_stale_children(child) }
     end
-    File.write config_path, lines.join
-  end
 
-  def self.process_line(line, lines, nav_data, in_navigation = false)
-    if !in_navigation && line.start_with?('navigation:')
-      lines << line << format_navigation_section(nav_data)
-      in_navigation = true
-    elsif in_navigation
-      in_navigation = line.start_with?(' ') || line.start_with?('-')
-      lines << line unless in_navigation
-    else
-      lines << line
+    def self.apply_nav_update(url, nav, nav_data, original)
+      orig = original[url]
+      if orig.nil?
+        apply_new_nav_item(url, nav, nav_data, original)
+      else
+        orig['text'] = nav['text']
+      end
     end
-    in_navigation
-  end
 
-  YAML_PREFIX = "---\n"
+    def self.apply_new_nav_item(url, nav, nav_data, original)
+      parent_url = File.dirname(url || '/')
+      parent = original["#{parent_url}/"]
+      if parent_url == '/'
+        nav_data << (original[url] = nav)
+      elsif parent.nil?
+        nav_data << { orphan_url: url }
+      else
+        (parent['children'] ||= []) << nav
+      end
+    end
 
-  def self.format_navigation_section(nav_data)
-    nav_data.empty? ? '' : nav_data.to_yaml[YAML_PREFIX.size..-1]
+    def self.check_for_orphaned_items(nav_data)
+      orphans = nav_data.map { |nav| nav[:orphan_url] }.compact
+      unless orphans.empty?
+        fail(StandardError, "Parent pages missing for the following:\n  " +
+          orphans.join("\n  "))
+      end
+    end
+
+    def self.write_navigation_data_to_config_file(config_path, nav_data)
+      lines = []
+      in_navigation = false
+      open(config_path).each_line do |line|
+        in_navigation = process_line line, lines, nav_data, in_navigation
+      end
+      File.write config_path, lines.join
+    end
+
+    def self.process_line(line, lines, nav_data, in_navigation = false)
+      if !in_navigation && line.start_with?('navigation:')
+        lines << line << format_navigation_section(nav_data)
+        in_navigation = true
+      elsif in_navigation
+        in_navigation = line.start_with?(' ') || line.start_with?('-')
+        lines << line unless in_navigation
+      else
+        lines << line
+      end
+      in_navigation
+    end
+
+    YAML_PREFIX = "---\n"
+
+    def self.format_navigation_section(nav_data)
+      nav_data.empty? ? '' : nav_data.to_yaml[YAML_PREFIX.size..-1]
+    end
   end
 end
