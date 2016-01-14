@@ -9,6 +9,7 @@ module GuidesStyle18F
     _pages/add-a-new-page.md
     _pages/add-images.md
     _pages/github-setup.md
+    _pages/images.png
     _pages/post-your-guide.md
     _pages/update-the-config-file/understanding-baseurl.md
     _pages/update-the-config-file.md
@@ -19,7 +20,6 @@ module GuidesStyle18F
     images/gh-default-branch.png
     images/gh-settings-button.png
     images/gh-webhook.png
-    images/images.png
   )
 
   def self.clear_template_files_and_create_new_repository(
