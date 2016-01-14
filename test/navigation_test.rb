@@ -393,6 +393,14 @@ EXPECTED_ERRORS
       assert_equal EXPECTED_ERRORS, errors + "\n"
     end
 
+    def test_ignore_static_files
+      write_config NAV_YAML
+      write_page('image.png', '')
+      errors = GuidesStyle18F::FrontMatter.validate_with_message_upon_error(
+        GuidesStyle18F::FrontMatter.load(testdir))
+      assert_nil(errors)
+    end
+
     def capture_stderr
       orig_stderr = $stderr
       $stderr = StringIO.new

@@ -5,6 +5,8 @@ require 'safe_yaml'
 
 module GuidesStyle18F
   module FrontMatter
+    EXTNAMES = %w(.md .html)
+
     def self.load(basedir)
       # init_file_to_front_matter_map is initializing the map with a nil value
       # for every file that _should_ contain front matter as far as the
@@ -87,7 +89,8 @@ module GuidesStyle18F
       Dir.chdir(basedir) do
         pages_dir = Dir.exist?('_pages') ? '_pages' : 'pages'
         Dir[File.join(pages_dir, '**', '*')].each do |file_name|
-          next unless File.file?(file_name)
+          extname = File.extname(file_name)
+          next unless File.file?(file_name) && EXTNAMES.include?(extname)
           file_to_front_matter[file_name] = nil
         end
       end
