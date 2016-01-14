@@ -12,6 +12,7 @@ module GuidesStyle18F
       @should_expand_nav = tag_class.parse(
         ShouldExpandNavTag::NAME, ' nav_parent_url ', nil, nil)
       @context = ::Liquid::Context.new
+      context['site'] = {}
       context.scopes.push('nav_parent_url' => '/foo/')
     end
 
@@ -28,6 +29,12 @@ module GuidesStyle18F
     def test_is_not_a_child_or_grandchild
       context['page'] = { 'url' => '/bar/' }
       refute should_expand_nav.render(context)
+    end
+
+    def test_expand_nav_site_variable_is_set
+      context['page'] = { 'url' => '/bar/' }
+      context['site']['expand_nav'] = true
+      assert should_expand_nav.render(context)
     end
 
     def test_is_the_page_itself

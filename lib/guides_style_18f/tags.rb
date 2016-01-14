@@ -13,6 +13,7 @@ module GuidesStyle18F
     end
 
     def render(context)
+      return true if context['site']['expand_nav']
       scope = context.scopes.detect { |s| s.member?(reference) }
       parent_url = scope[reference]
       page_url = context['page']['url']
