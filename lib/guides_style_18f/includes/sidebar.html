@@ -1,13 +1,12 @@
 <aside>
   <p class="intro">{{ site.subtitle }}</p>
   <nav class="sidebar-nav" role="navigation">
-    <ul>{% for link in site.navigation %}{% assign navtitle = page.title %}{% if page.navtitle %}{% assign navtitle = page.navtitle %}{% endif %}
-        <li class="group {% if navtitle == link.text %}sidebar-nav-active{% endif %}">
+    <ul>{% for link in site.navigation %}{% capture parent_url %}/{{ link.url }}{% endcapture %}
+        <li class="group {% if page.url == parent_url %}sidebar-nav-active{% endif %}">
           <a href="{% if link.internal == true %}{{ site.baseurl }}/{% endif %}{{ link.url }}"  
-            title="{% if navtitle == link.text %}Current Page
+            title="{% if page.url == parent_url %}Current Page
                   {% else %}{{ link.text }}{% endif %}">{{ link.text }}</a>
           {% assign parent = link %}
-          {% capture parent_url %}/{{ link.url }}{% endcapture %}
           {% guides_style_18f_include sidebar-children.html %}
         </li>{% endfor %}
     </ul>
