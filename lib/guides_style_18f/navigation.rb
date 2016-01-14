@@ -155,7 +155,7 @@ module GuidesStyle18F
     def self.page_nav(front_matter)
       url_components = front_matter['permalink'].split('/')[1..-1]
       result = {
-        'text' => front_matter['title'],
+        'text' => front_matter['navtitle'] || front_matter['title'],
         'url' => "#{url_components.nil? ? '' : url_components.last}/",
         'internal' => true,
       }

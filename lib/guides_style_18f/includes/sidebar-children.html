@@ -5,11 +5,11 @@
         aria-controls="nav-collapsible-{{ forloop.index }}">+</button>
 <ul class="nav-children" id="nav-collapsible-{{ forloop.index }}"
     aria-hidden="{% if expand_nav == 'true' %}false{% else %}true{% endif %}">
-  {% for child in parent.children %}
+  {% for child in parent.children %}{% assign navtitle = page.title %}{% if page.navtitle %}{% assign navtitle = page.navtitle %}{% endif %}
   {% capture child_url %}{{ parent_url }}{{ child.url }}{% endcapture %}
-    <li class="{% if page.title == child.text %}sidebar-nav-active{% endif %}">
+    <li class="{% if navtitle == child.text %}sidebar-nav-active{% endif %}">
       <a href="{% if child.internal == true %}{{ site.baseurl }}{{ child_url }}{% else %}{{ child.url }}{% endif %}"
-        title="{% if page.title == child.text %}Current Page{% else %}{{ child.text }}{% endif %}">{{ child.text }}</a>
+        title="{% if navtitle == child.text %}Current Page{% else %}{{ child.text }}{% endif %}">{{ child.text }}</a>
       {% assign parent = child %}{% assign parent_url = child_url %}
       {% guides_style_18f_include sidebar-children.html %}
       {% capture parent_url %}{% guides_style_18f_pop_last_url_component parent_url %}{% endcapture %}
