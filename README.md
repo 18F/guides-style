@@ -82,6 +82,37 @@ navtitle: Polonius's advice
 ---
 ```
 
+### Selectively expanding navigation bar items
+
+If you wish to expand or contract specific navigation bar items, add the
+`expand_nav:` property to those items in the `navigation:` list in
+`_config.yml`. For example, the `Update the config file` entry will expand
+since the default `expand_nav` property is `true`, but `Add a new page` will
+remain collapsed:
+
+```yaml
+expand_nav: true
+
+navigation:
+- text: Introduction
+  internal: true
+- text: Add a new page
+  url: add-a-new-page/
+  internal: true
+  expand_nav: false
+  children:
+  - text: Make a child page
+    url: make-a-child-page/
+    internal: true
+- text: Update the config file
+  url: update-the-config-file/
+  internal: true
+  children:
+  - text: Understanding the `baseurl:` property
+    url: understanding-baseurl/
+    internal: true
+```
+
 ### Development
 
 First, choose a Jekyll site you'd like to use to view the impact of your

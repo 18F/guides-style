@@ -6,18 +6,28 @@ module GuidesStyle18F
     NAME = 'guides_style_18f_should_expand_nav'
     ::Liquid::Template.register_tag(NAME, self)
 
-    attr_reader :reference
+    attr_reader :parent_reference, :url_reference
 
     def initialize(_tag_name, markup, _)
-      @reference = markup.strip
+      references = markup.split(',').map(&:strip)
+      @parent_reference = references.shift
+      @url_reference = references.shift
     end
 
     def render(context)
-      return true if context['site']['expand_nav']
-      scope = context.scopes.detect { |s| s.member?(reference) }
-      parent_url = scope[reference]
+      scope = context.scopes.detect { |s| s.member?(url_reference) }
+      parent_url = scope[url_reference]
       page_url = context['page']['url']
-      page_url != parent_url && page_url.start_with?(parent_url)
+      (page_url != parent_url && page_url.start_with?(parent_url)) || (
+        expand_nav_default(scope, context))
+    end
+
+    private
+
+    def expand_nav_default(scope, context)
+      default = scope[parent_reference]['expand_nav']
+      default = context['site']['expand_nav'] if default.nil?
+      default.nil? ? false : default
     end
   end
 
