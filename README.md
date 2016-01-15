@@ -58,6 +58,10 @@ back_link:
 
 # If you use Analytics, add your code here:
 google_analytics_ua: UA-????????-??
+
+# If you want all of the navigation bar entries expanded by default, add this
+# property and it to true:
+expand_nav: true
 ```
 
 ### Additional scripts and styles
@@ -65,6 +69,18 @@ google_analytics_ua: UA-????????-??
 If you'd like to add additional scripts or styles to every page on the site,
 you can add `styles:` and `scripts:` lists to `_config.yml`. To add them to a
 particular page, add these lists to the page's front matter.
+
+### Alternate navigation bar titles
+
+If you want a page to have a different title in the navigation bar than that
+of the page itself, add a `navtitle:` property to the page's front matter:
+
+```md
+---
+title: Since brevity is the soul of wit, I'll be brief.
+navtitle: Polonius's advice
+---
+```
 
 ### Development
 
