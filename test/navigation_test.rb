@@ -401,6 +401,24 @@ EXPECTED_ERRORS
       assert_nil(errors)
     end
 
+    WITH_NAVTITLE = <<WITH_NAVTITLE
+---
+title: Some egregiously, pretentiously, criminally long title
+navtitle: Hello!
+---
+WITH_NAVTITLE
+
+    def test_use_navtitle_if_present
+      write_config NAV_YAML
+      write_page('navtitle.md', WITH_NAVTITLE)
+      GuidesStyle18F.update_navigation_configuration testdir
+      expected = [{
+        'text' => 'Hello!', 'url' => 'navtitle/', 'internal' => true
+      }]
+      result = SafeYAML.load(read_config, safe: true)
+      assert_equal(expected, result['navigation'])
+    end
+
     def capture_stderr
       orig_stderr = $stderr
       $stderr = StringIO.new
