@@ -5,15 +5,17 @@ require 'minitest/autorun'
 
 module GuidesStyle18F
   class ShouldExpandNavTagTest < ::Minitest::Test
-    attr_reader :should_expand_nav, :context
+    attr_reader :should_expand_nav, :context, :parent_item
 
     def setup
       tag_class = ::Liquid::Template.tags[ShouldExpandNavTag::NAME]
       @should_expand_nav = tag_class.parse(
-        ShouldExpandNavTag::NAME, ' nav_parent_url ', nil, nil)
+        ShouldExpandNavTag::NAME, 'parent_item, nav_parent_url ', nil, nil)
       @context = ::Liquid::Context.new
       context['site'] = {}
-      context.scopes.push('nav_parent_url' => '/foo/')
+      @parent_item = {}
+      context.scopes.push(
+        'parent_item' => parent_item, 'nav_parent_url' => '/foo/')
     end
 
     def test_is_child
@@ -31,15 +33,41 @@ module GuidesStyle18F
       refute should_expand_nav.render(context)
     end
 
-    def test_expand_nav_site_variable_is_set
+    def test_is_the_page_itself
+      context['page'] = { 'url' => '/foo/' }
+      refute should_expand_nav.render(context)
+    end
+
+    def test_expand_nav_site_default_is_true_so_unrelated_item_should_expand
       context['page'] = { 'url' => '/bar/' }
       context['site']['expand_nav'] = true
       assert should_expand_nav.render(context)
     end
 
-    def test_is_the_page_itself
-      context['page'] = { 'url' => '/foo/' }
+    def test_expand_nav_site_default_is_false_but_child_item_should_expand
+      context['page'] = { 'url' => '/foo/bar/' }
+      context['site']['expand_nav'] = false
+      assert should_expand_nav.render(context)
+    end
+
+    def test_expand_nav_site_default_is_true_but_item_default_is_false
+      context['page'] = { 'url' => '/bar/baz' }
+      context['site']['expand_nav'] = true
+      parent_item['expand_nav'] = false
       refute should_expand_nav.render(context)
+    end
+
+    def test_expand_nav_site_default_is_false_but_item_default_is_true
+      context['page'] = { 'url' => '/bar/baz' }
+      context['site']['expand_nav'] = false
+      parent_item['expand_nav'] = true
+      assert should_expand_nav.render(context)
+    end
+
+    def test_expand_nav_site_default_is_nil_but_item_default_is_true
+      context['page'] = { 'url' => '/bar/baz' }
+      parent_item['expand_nav'] = true
+      assert should_expand_nav.render(context)
     end
   end
 

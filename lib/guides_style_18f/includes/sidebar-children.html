@@ -1,5 +1,5 @@
 {% if parent.children %}
-{% capture expand_nav %}{% guides_style_18f_should_expand_nav parent_url %}{% endcapture %}
+{% capture expand_nav %}{% guides_style_18f_should_expand_nav parent, parent_url %}{% endcapture %}
 <button class="expand-subnav"
         aria-expanded="{{ expand_nav }}"
         aria-controls="nav-collapsible-{{ forloop.index }}">+</button>
