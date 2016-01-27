@@ -35,7 +35,7 @@ module GuidesStyle18F
 
     def test_is_the_page_itself
       context['page'] = { 'url' => '/foo/' }
-      refute should_expand_nav.render(context)
+      assert should_expand_nav.render(context)
     end
 
     def test_expand_nav_site_default_is_true_so_unrelated_item_should_expand
