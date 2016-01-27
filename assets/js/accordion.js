@@ -1,6 +1,7 @@
 /*  Originally from the Government Wide Pattern Library.
     Modified to check for items expanded on page load and
     to allow you to close an accordion without opening another
+    https://github.com/18F/web-design-standards/blob/v0.8/assets/js/components.js#L202-L258
 */
 
 function Accordion($el) {
@@ -45,9 +46,3 @@ Accordion.prototype.hideAll = function() {
 function accordion($el) {
   return new Accordion($el);
 }
-
-$(function() {
-  $('.sidebar-nav').each(function() {
-    accordion($(this));
-  });
-});
