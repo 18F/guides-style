@@ -18,8 +18,8 @@ module GuidesStyle18F
       scope = context.scopes.detect { |s| s.member?(url_reference) }
       parent_url = scope[url_reference]
       page_url = context['page']['url']
-      (page_url != parent_url && page_url.start_with?(parent_url)) || (
-        expand_nav_default(scope, context))
+      page_url == parent_url || page_url.start_with?(parent_url) ||
+        expand_nav_default(scope, context)
     end
 
     private
