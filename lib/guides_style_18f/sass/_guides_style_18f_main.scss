@@ -323,11 +323,81 @@ section:before {
 }
 
 header {
-    width: 100%;
     border-bottom: 4px solid #1188ff;
     background-color: #fff;
     padding: 2em 0;
 }
+
+header div.wrap{
+    position: relative;
+    padding-top: 2.4em;
+}
+
+header div.wrap::after{
+    content: "";
+    display: table;
+    clear: both;
+}
+
+header h1.site-title{
+    margin-bottom: 0.4em;
+}
+
+header div.wrap div.back-link{
+    position: absolute;
+    left: 20px;
+    top: -1em;
+    font-size: 14px;
+    color: #555;    
+}
+
+header div.wrap div.back-link a{
+    color: inherit;
+    text-decoration: underline;
+}
+
+header div.wrap div.back-link a:hover{ text-decoration: none; }
+
+@media screen and (min-width: 45em){
+    header h1.site-title{
+        float: left;
+        width: 67%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+    header div.search-interface{
+        width: 30%;
+        float: right;
+    }
+}
+
+
+header div.search-interface input{
+    display: block;
+    -webkit-box-sizing: border-box;
+    width: 100%;
+    padding: 6px 4px;
+    padding-left: 2em;
+    font: inherit;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    background: url(../svg/search.svg) 6px 45% no-repeat;
+    background-size: 16px;
+}
+
+ul.searchresultspopup{ border-radius: 3px; }
+ul.searchresultspopup li{ padding: 0; }
+ul.searchresultspopup li a{
+    padding: 4px;
+    display: block;
+    color: inherit;
+}
+ul.searchresultspopup li.ng-scope.selected a{
+    background: #333;
+    color: white;   
+}
+
 
 .main-content img {
     width: 100%;
