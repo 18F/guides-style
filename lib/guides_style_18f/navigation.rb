@@ -99,9 +99,7 @@ module GuidesStyle18F
 
     def self.missing_property_errors(data)
       properties = %w(title permalink)
-      properties.map do |p|
-        "no `#{p}:` property" if data[p].nil?
-      end.compact
+      properties.map { |p| "no `#{p}:` property" if data[p].nil? }.compact
     end
 
     def self.permalink_errors(data)
