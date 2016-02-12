@@ -1,5 +1,7 @@
 # @author Mike Bland (michael.bland@gsa.gov)
 
+require_relative './redirect_nodes'
+
 require 'jekyll'
 require 'safe_yaml'
 
@@ -126,8 +128,6 @@ module GuidesStyle18F
     NavigationMenu.write_navigation_data_to_config_file(config_path, nav_data)
   end
 
-  private
-
   module NavigationMenu
     def self.update_navigation_data(nav_data, basedir, config_data)
       original = map_nav_items_by_url('/', nav_data).to_h
@@ -135,7 +135,7 @@ module GuidesStyle18F
       remove_stale_nav_entries(nav_data, original, updated)
       updated.map { |url, nav| apply_nav_update(url, nav, nav_data, original) }
       if config_data['generate_redirect_nodes']
-        NavigationRedirectNodes.generate(original, nav_data)
+        RedirectNodes.create_homes_for_orphans(original, nav_data)
       else
         check_for_orphaned_items(nav_data)
       end
@@ -241,50 +241,6 @@ module GuidesStyle18F
 
     def self.format_navigation_section(nav_data)
       nav_data.empty? ? '' : nav_data.to_yaml[YAML_PREFIX.size..-1]
-    end
-  end
-
-  class NavigationRedirectNodes
-    def self.generate(original, nav_data)
-      orphans = nav_data.select { |nav| nav[:orphan_url] }
-      orphans.each { |nav| create_home_for_orphan(nav, nav_data, original) }
-      nav_data.reject! { |nav| nav[:orphan_url] }
-    end
-
-    def self.create_home_for_orphan(nav, nav_data, original)
-      parents = parse_parents_from_orphan_url(nav)
-      child_url = '/'
-      immediate_parent = parents.reduce(nil) do |parent, child|
-        child_url = child_url + child + '/'
-        link_parent_to_child(nav_data, child_url, parent, child, original)
-      end
-      nav_copy = {}.merge(nav)
-      nav_copy.delete(:orphan_url)
-      (immediate_parent['children'] ||= []) << nav_copy
-    end
-
-    def self.parse_parents_from_orphan_url(nav)
-      parent_url = File.dirname(nav[:orphan_url])
-      # Trim off the leading slash.
-      parent_url[1..parent_url.size - 1].split('/')
-    end
-
-    def self.link_parent_to_child(nav_data, child_url, parent, child, original)
-      child_nav = original[child_url]
-      if child_nav.nil?
-        child_nav = redirect_node(child)
-        original[child_url] = child_nav
-        (parent.nil? ? nav_data : (parent['children'] ||= [])) << child_nav
-      end
-      child_nav
-    end
-
-    def self.redirect_node(parent_slug)
-      { 'text' => parent_slug.split('-').join(' ').capitalize,
-        'url' => parent_slug + '/',
-        'internal' => true,
-        'redirect' => true,
-      }
     end
   end
 end
