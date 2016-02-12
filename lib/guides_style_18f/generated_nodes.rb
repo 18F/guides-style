@@ -1,5 +1,5 @@
 module GuidesStyle18F
-  class RedirectNodes
+  class GeneratedNodes
     # Params:
     #   original: Mapping from original document URL to "nav item" objects,
     #     i.e. { 'text' => '...', 'url' => '...', 'internal' => true }
@@ -9,7 +9,7 @@ module GuidesStyle18F
     #
     # Returns:
     #   nav_data with orphans properly nested within automatically-generated
-    #     parent nodes marked with `'redirect' => true`
+    #     parent nodes marked with `'generated' => true`
     def self.create_homes_for_orphans(original, nav_data)
       orphans = nav_data.select { |nav| nav[:orphan_url] }
       orphans.each { |nav| create_home_for_orphan(nav, nav_data, original) }
@@ -31,18 +31,18 @@ module GuidesStyle18F
     def self.find_or_create_node(nav_data, child_url, parent, child, original)
       child_nav = original[child_url]
       if child_nav.nil?
-        child_nav = redirect_node(child)
+        child_nav = generated_node(child)
         original[child_url] = child_nav
         (parent.nil? ? nav_data : (parent['children'] ||= [])) << child_nav
       end
       child_nav
     end
 
-    def self.redirect_node(parent_slug)
+    def self.generated_node(parent_slug)
       { 'text' => parent_slug.split('-').join(' ').capitalize,
         'url' => parent_slug + '/',
         'internal' => true,
-        'redirect' => true,
+        'generated' => true,
       }
     end
 
@@ -56,7 +56,7 @@ module GuidesStyle18F
       (nav_data || []).reject! do |nav|
         children = (nav['children'] || [])
         prune_childless_parents(children)
-        nav['redirect'] && children.empty?
+        nav['generated'] && children.empty?
       end
     end
   end

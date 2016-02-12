@@ -1,6 +1,6 @@
 # @author Mike Bland (michael.bland@gsa.gov)
 
-require_relative './redirect_nodes'
+require_relative './generated_nodes'
 
 require 'jekyll'
 require 'safe_yaml'
@@ -135,8 +135,8 @@ module GuidesStyle18F
       updated = updated_nav_data(basedir)
       remove_stale_nav_entries(nav_data, original, updated)
       updated.map { |url, nav| apply_nav_update(url, nav, nav_data, original) }
-      if config_data['generate_redirect_nodes']
-        RedirectNodes.create_homes_for_orphans(original, nav_data)
+      if config_data['generate_nodes']
+        GeneratedNodes.create_homes_for_orphans(original, nav_data)
       else
         check_for_orphaned_items(nav_data)
       end
@@ -173,7 +173,7 @@ module GuidesStyle18F
     def self.remove_stale_nav_entries(nav_data, original, updated)
       # Remove old entries whose pages have been deleted
       original.each do |url, nav|
-        if !updated.member?(url) && nav['internal'] && !nav['redirect']
+        if !updated.member?(url) && nav['internal'] && !nav['generated']
           nav['delete'] = true
         end
       end
@@ -195,7 +195,7 @@ module GuidesStyle18F
         apply_new_nav_item(url, nav, nav_data, original)
       else
         orig['text'] = nav['text']
-        orig.delete('redirect')
+        orig.delete('generated')
       end
     end
 

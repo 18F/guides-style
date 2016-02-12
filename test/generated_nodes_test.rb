@@ -1,4 +1,4 @@
-require_relative '../lib/guides_style_18f/redirect_nodes'
+require_relative '../lib/guides_style_18f/generated_nodes'
 require_relative '../lib/guides_style_18f/navigation'
 
 require 'minitest/autorun'
@@ -6,7 +6,7 @@ require 'minitest/autorun'
 module GuidesStyle18F
   # rubocop:disable ClassLength
   # rubocop:disable MethodLength
-  class RedirectNodesTest < ::Minitest::Test
+  class GeneratedNodesTest < ::Minitest::Test
     def setup
     end
 
@@ -14,13 +14,13 @@ module GuidesStyle18F
       NavigationMenu.map_nav_items_by_url('/', nav_data).to_h
     end
 
-    def page_nav(url, text, redirect: false, children: nil, orphan: false)
+    def page_nav(url, text, generated: false, children: nil, orphan: false)
       nav = {
         'url' => url,
         'text' => text,
         'internal' => true,
       }
-      nav['redirect'] = true if redirect
+      nav['generated'] = true if generated
       nav['children'] = children if children
       nav[:orphan_url] = url if orphan
       nav
@@ -29,25 +29,25 @@ module GuidesStyle18F
     def test_empty_nav_data
       nav_data = []
       original = generate_url_map(nav_data)
-      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(original, nav_data)
       assert_empty(nav_data)
     end
 
     def test_single_home_page_nav_entry
       nav_data = [page_nav('/', 'Introduction')]
       original = generate_url_map(nav_data)
-      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(original, nav_data)
       assert_equal([page_nav('/', 'Introduction')], nav_data)
     end
 
     def test_single_orphan
       nav_data = [page_nav('/foo/bar/', 'Bar info', orphan: true)]
       original = generate_url_map(nav_data)
-      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(original, nav_data)
       assert_equal(
         [page_nav(
           'foo/', 'Foo',
-          redirect: true,
+          generated: true,
           children: [page_nav('bar/', 'Bar info')])
         ],
         nav_data)
@@ -60,11 +60,11 @@ module GuidesStyle18F
         page_nav('/foo/quux/', 'Quux info', orphan: true),
       ]
       original = generate_url_map(nav_data)
-      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(original, nav_data)
       assert_equal(
         [page_nav(
           'foo/', 'Foo',
-          redirect: true,
+          generated: true,
           children: [
             page_nav('bar/', 'Bar info'),
             page_nav('baz/', 'Baz info'),
@@ -77,15 +77,15 @@ module GuidesStyle18F
     def test_nested_orphan
       nav_data = [page_nav('/foo/bar/baz/', 'Baz info', orphan: true)]
       original = generate_url_map(nav_data)
-      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(original, nav_data)
       assert_equal(
         [page_nav(
           'foo/', 'Foo',
-          redirect: true,
+          generated: true,
           children: [
             page_nav(
               'bar/', 'Bar',
-              redirect: true,
+              generated: true,
               children: [page_nav('baz/', 'Baz info')])
           ])
         ],
@@ -96,11 +96,11 @@ module GuidesStyle18F
       nav_data = [
         page_nav(
           'foo/', 'Foo',
-          redirect: true,
+          generated: true,
           children: [
             page_nav(
               'bar/', 'Bar',
-              redirect: true,
+              generated: true,
               children: [page_nav('baz/', 'Baz info')])
           ])
       ]
@@ -114,27 +114,27 @@ module GuidesStyle18F
       nav_data = [
         page_nav(
           'foo/', 'Foo',
-          redirect: true,
-          children: [page_nav('bar/', 'Bar', redirect: true)]
+          generated: true,
+          children: [page_nav('bar/', 'Bar', generated: true)]
         )
       ]
 
       original = generate_url_map(nav_data)
-      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(original, nav_data)
       assert_empty(nav_data)
     end
 
-    def test_intermediate_non_redirect_nodes_are_utilized
+    def test_intermediate_non_generated_nodes_are_utilized
       nav_data = [
         page_nav('/foo/bar/', 'Bar info', orphan: true),
         page_nav('/foo/bar/baz/', 'Baz info', orphan: true),
       ]
       original = generate_url_map(nav_data)
-      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(original, nav_data)
       assert_equal(
         [page_nav(
           'foo/', 'Foo',
-          redirect: true,
+          generated: true,
           children: [
             page_nav(
               'bar/', 'Bar info',
@@ -144,15 +144,15 @@ module GuidesStyle18F
         nav_data)
     end
 
-    def test_replace_existing_redirect_node_with_new_page_node
+    def test_replace_existing_generated_node_with_new_page_node
       nav_data = [
         page_nav(
           'foo/', 'Foo',
-          redirect: true,
+          generated: true,
           children: [
             page_nav(
               'bar/', 'Bar',
-              redirect: true,
+              generated: true,
               children: [page_nav('baz/', 'Baz info')])
           ])
       ]
@@ -167,7 +167,7 @@ module GuidesStyle18F
         NavigationMenu.apply_nav_update(url, nav, nav_data, original)
       end
 
-      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(original, nav_data)
       assert_equal(
         [
           page_nav(
@@ -175,7 +175,7 @@ module GuidesStyle18F
             children: [
               page_nav(
                 'bar/', 'Bar',
-                redirect: true,
+                generated: true,
                 children: [page_nav('baz/', 'Baz info')])
             ])
         ],
