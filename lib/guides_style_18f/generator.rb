@@ -21,16 +21,32 @@ module GuidesStyle18F
     private
 
     def flatten_url_namespace(docs)
+      flat_to_orig = {}
       docs.each do |page|
-        page.data['permalink'] = flat_url(page.url)
+        flattened_url = flat_url(page.url)
+        (flat_to_orig[flattened_url] ||= []) << page.url
+        page.data['permalink'] = flattened_url
         (page.data['breadcrumbs'] || []).each do |crumb|
           crumb['url'] = flat_url(crumb['url'])
         end
       end
+      check_for_collisions(flat_to_orig)
     end
 
     def flat_url(url)
       File.join('', File.basename(url), '')
+    end
+
+    def check_for_collisions(flat_to_orig)
+      collisions = flat_to_orig.map do |flattened, orig|
+        [flattened, orig] if orig.size != 1
+      end.compact
+
+      return if collisions.empty?
+
+      messages = collisions.map { |flat, orig| "#{flat}: #{orig.join(', ')}" }
+      fail(StandardError, "collisions in flattened namespace between\n  " +
+        messages.join("\n  "))
     end
   end
 end
