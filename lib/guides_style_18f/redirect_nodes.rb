@@ -14,6 +14,7 @@ module GuidesStyle18F
       orphans = nav_data.select { |nav| nav[:orphan_url] }
       orphans.each { |nav| create_home_for_orphan(nav, nav_data, original) }
       nav_data.reject! { |nav| nav[:orphan_url] }
+      prune_childless_parents(nav_data)
     end
 
     def self.create_home_for_orphan(nav, nav_data, original)
@@ -45,6 +46,14 @@ module GuidesStyle18F
         'internal' => true,
         'redirect' => true,
       }
+    end
+
+    def self.prune_childless_parents(nav_data)
+      (nav_data || []).reject! do |nav|
+        children = (nav['children'] || [])
+        prune_childless_parents(children)
+        nav['redirect'] && children.empty?
+      end
     end
   end
 end

@@ -109,6 +109,20 @@ module GuidesStyle18F
       refute_empty(
         NavigationMenu.remove_stale_nav_entries(nav_data, original, updated))
     end
+
+    def test_childless_parent_nodes_are_pruned
+      nav_data = [
+        page_nav(
+          'foo/', 'Foo',
+          redirect: true,
+          children: [page_nav('bar/', 'Bar', redirect: true)]
+        )
+      ]
+
+      original = generate_url_map(nav_data)
+      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      assert_empty(nav_data)
+    end
   end
   # rubocop:enable MethodLength
   # rubocop:enable ClassLength
