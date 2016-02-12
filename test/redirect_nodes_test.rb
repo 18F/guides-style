@@ -143,6 +143,44 @@ module GuidesStyle18F
         ],
         nav_data)
     end
+
+    def test_replace_existing_redirect_node_with_new_page_node
+      nav_data = [
+        page_nav(
+          'foo/', 'Foo',
+          redirect: true,
+          children: [
+            page_nav(
+              'bar/', 'Bar',
+              redirect: true,
+              children: [page_nav('baz/', 'Baz info')])
+          ])
+      ]
+      original = generate_url_map(nav_data)
+      updated = {
+        '/foo/' => page_nav('foo/', 'Foo info'),
+        '/foo/bar/baz/' => page_nav('baz/', 'Baz info'),
+      }
+
+      NavigationMenu.remove_stale_nav_entries(nav_data, original, updated)
+      updated.map do |url, nav|
+        NavigationMenu.apply_nav_update(url, nav, nav_data, original)
+      end
+
+      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      assert_equal(
+        [
+          page_nav(
+            'foo/', 'Foo info',
+            children: [
+              page_nav(
+                'bar/', 'Bar',
+                redirect: true,
+                children: [page_nav('baz/', 'Baz info')])
+            ])
+        ],
+        nav_data)
+    end
   end
   # rubocop:enable MethodLength
   # rubocop:enable ClassLength

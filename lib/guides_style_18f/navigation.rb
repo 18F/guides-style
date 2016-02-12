@@ -195,6 +195,7 @@ module GuidesStyle18F
         apply_new_nav_item(url, nav, nav_data, original)
       else
         orig['text'] = nav['text']
+        orig.delete('redirect')
       end
     end
 
