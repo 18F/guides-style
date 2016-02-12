@@ -342,12 +342,6 @@ module GuidesStyle18F
       assert_result_matches_expected_config(NAV_DATA)
     end
 
-    MISSING_TITLE = <<MISSING_TITLE
----
-other_property: other value
----
-MISSING_TITLE
-
     NO_LEADING_SLASH = <<NO_LEADING_SLASH
 ---
 title: No leading slash
@@ -364,7 +358,6 @@ NO_TRAILING_SLASH
 
     FILES_WITH_ERRORS = {
       'missing-front-matter.md' => 'no front matter brosef',
-      'missing-title.md' => MISSING_TITLE,
       'no-leading-slash.md' => NO_LEADING_SLASH,
       'no-trailing-slash.md' => NO_TRAILING_SLASH,
     }
@@ -373,8 +366,6 @@ NO_TRAILING_SLASH
 The following files have errors in their front matter:
   _pages/missing-front-matter.md:
     no front matter defined
-  _pages/missing-title.md:
-    no `title:` property
   _pages/no-leading-slash.md:
     `permalink:` does not begin with '/'
   _pages/no-trailing-slash.md:
