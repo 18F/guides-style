@@ -122,19 +122,23 @@ module GuidesStyle18F
     config_data = SafeYAML.load_file config_path, safe: true
     return unless config_data
     nav_data = config_data['navigation'] || []
-    NavigationMenu.update_navigation_data(nav_data, basedir)
+    NavigationMenu.update_navigation_data(nav_data, basedir, config_data)
     NavigationMenu.write_navigation_data_to_config_file(config_path, nav_data)
   end
 
   private
 
   module NavigationMenu
-    def self.update_navigation_data(nav_data, basedir)
+    def self.update_navigation_data(nav_data, basedir, config_data)
       original = map_nav_items_by_url('/', nav_data).to_h
       updated = updated_nav_data(basedir)
       remove_stale_nav_entries(nav_data, original, updated)
       updated.map { |url, nav| apply_nav_update(url, nav, nav_data, original) }
-      check_for_orphaned_items(nav_data)
+      if config_data['generate_redirect_nodes']
+        generate_redirect_nodes(original, nav_data)
+      else
+        check_for_orphaned_items(nav_data)
+      end
     end
 
     def self.map_nav_items_by_url(parent_url, nav_data)
@@ -192,23 +196,59 @@ module GuidesStyle18F
     end
 
     def self.apply_new_nav_item(url, nav, nav_data, original)
-      parent_url = File.dirname(url || '/')
-      parent = original["#{parent_url}/"]
-      if parent_url == '/'
+      raw_parent_url = File.dirname(url || '/')
+      parent_url = "#{raw_parent_url}/"
+      parent = original[raw_parent_url]
+      if raw_parent_url == '/'
         nav_data << (original[url] = nav)
       elsif parent.nil?
-        nav_data << { orphan_url: url }
+        nav_data << nav.merge(orphan_url: url)
       else
         (parent['children'] ||= []) << nav
       end
     end
 
-    def self.check_for_orphaned_items(nav_data)
-      orphans = nav_data.map { |nav| nav[:orphan_url] }.compact
-      unless orphans.empty?
-        fail(StandardError, "Parent pages missing for the following:\n  " +
-          orphans.join("\n  "))
+    def self.generate_redirect_nodes(original, nav_data)
+      orphans(nav_data).each do |nav|
+        parent_url = File.dirname(nav[:orphan_url])
+        # Trim off the leading slash.
+        parents = parent_url[1..parent_url.size - 1].split('/')
+        child_url = '/'
+        parent = parents.reduce(nil) do |parent, child|
+          child_url = child_url + child + '/'
+          child_nav = original[child_url]
+          if child_nav.nil?
+            child_nav = redirect_node(child)
+            original[child_url] = child_nav
+            (parent.nil? ? nav_data : (parent['children'] ||= [])) << child_nav 
+          end
+          child_nav
+        end
+        nav_copy = {}.merge(nav)
+        nav_copy.delete(:orphan_url)
+        (parent['children'] ||= []) << nav_copy
       end
+      nav_data.reject! { |nav| nav[:orphan_url] }
+    end
+
+    def self.redirect_node(parent_slug)
+      { 'text' => parent_slug.split('-').join(' ').capitalize,
+        'url' => parent_slug + '/',
+        'internal' => true,
+        'redirect' => true,
+      }
+    end
+
+    def self.check_for_orphaned_items(nav_data)
+      orphan_urls = orphans(nav_data).map(&:orphan_url)
+      unless orphan_urls.empty?
+        fail(StandardError, "Parent pages missing for the following:\n  " +
+          orphan_urls.join("\n  "))
+      end
+    end
+
+    def self.orphans(nav_data)
+      nav_data.select { |nav| nav[:orphan_url] }
     end
 
     def self.write_navigation_data_to_config_file(config_path, nav_data)
