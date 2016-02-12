@@ -125,7 +125,8 @@ module GuidesStyle18F
     return unless config_data
     nav_data = config_data['navigation'] || []
     NavigationMenu.update_navigation_data(nav_data, basedir, config_data)
-    NavigationMenu.write_navigation_data_to_config_file(config_path, nav_data)
+    NavigationMenuWriter.write_navigation_data_to_config_file(
+      config_path, nav_data)
   end
 
   module NavigationMenu
@@ -216,7 +217,9 @@ module GuidesStyle18F
           orphan_urls.join("\n  "))
       end
     end
+  end
 
+  class NavigationMenuWriter
     def self.write_navigation_data_to_config_file(config_path, nav_data)
       lines = []
       in_navigation = false
