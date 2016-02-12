@@ -123,6 +123,26 @@ module GuidesStyle18F
       RedirectNodes.create_homes_for_orphans(original, nav_data)
       assert_empty(nav_data)
     end
+
+    def test_intermediate_non_redirect_nodes_are_utilized
+      nav_data = [
+        page_nav('/foo/bar/', 'Bar info', orphan: true),
+        page_nav('/foo/bar/baz/', 'Baz info', orphan: true),
+      ]
+      original = generate_url_map(nav_data)
+      RedirectNodes.create_homes_for_orphans(original, nav_data)
+      assert_equal(
+        [page_nav(
+          'foo/', 'Foo',
+          redirect: true,
+          children: [
+            page_nav(
+              'bar/', 'Bar info',
+              children: [page_nav('baz/', 'Baz info')])
+          ])
+        ],
+        nav_data)
+    end
   end
   # rubocop:enable MethodLength
   # rubocop:enable ClassLength

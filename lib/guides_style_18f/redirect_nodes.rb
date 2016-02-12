@@ -23,14 +23,12 @@ module GuidesStyle18F
       child_url = '/'
       immediate_parent = parents.reduce(nil) do |parent, child|
         child_url = child_url + child + '/'
-        link_parent_to_child(nav_data, child_url, parent, child, original)
+        find_or_create_node(nav_data, child_url, parent, child, original)
       end
-      nav_copy = {}.merge(nav)
-      nav_copy.delete(:orphan_url)
-      (immediate_parent['children'] ||= []) << nav_copy
+      assign_orphan_to_home(nav, immediate_parent, original)
     end
 
-    def self.link_parent_to_child(nav_data, child_url, parent, child, original)
+    def self.find_or_create_node(nav_data, child_url, parent, child, original)
       child_nav = original[child_url]
       if child_nav.nil?
         child_nav = redirect_node(child)
@@ -46,6 +44,12 @@ module GuidesStyle18F
         'internal' => true,
         'redirect' => true,
       }
+    end
+
+    def self.assign_orphan_to_home(nav, immediate_parent, original)
+      nav_copy = {}.merge(nav)
+      original[nav_copy.delete(:orphan_url)] = nav_copy
+      (immediate_parent['children'] ||= []) << nav_copy
     end
 
     def self.prune_childless_parents(nav_data)
