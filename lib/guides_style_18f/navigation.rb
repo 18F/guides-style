@@ -135,7 +135,7 @@ module GuidesStyle18F
       remove_stale_nav_entries(nav_data, original, updated)
       updated.map { |url, nav| apply_nav_update(url, nav, nav_data, original) }
       if config_data['generate_redirect_nodes']
-        generate_redirect_nodes(original, nav_data)
+        NavigationRedirectNodes.generate(original, nav_data)
       else
         check_for_orphaned_items(nav_data)
       end
@@ -196,10 +196,9 @@ module GuidesStyle18F
     end
 
     def self.apply_new_nav_item(url, nav, nav_data, original)
-      raw_parent_url = File.dirname(url || '/')
-      parent_url = "#{raw_parent_url}/"
-      parent = original[raw_parent_url]
-      if raw_parent_url == '/'
+      parent_url = File.dirname(url || '/')
+      parent = original["#{parent_url}/"]
+      if parent_url == '/'
         nav_data << (original[url] = nav)
       elsif parent.nil?
         nav_data << nav.merge(orphan_url: url)
@@ -208,47 +207,12 @@ module GuidesStyle18F
       end
     end
 
-    def self.generate_redirect_nodes(original, nav_data)
-      orphans(nav_data).each do |nav|
-        parent_url = File.dirname(nav[:orphan_url])
-        # Trim off the leading slash.
-        parents = parent_url[1..parent_url.size - 1].split('/')
-        child_url = '/'
-        parent = parents.reduce(nil) do |parent, child|
-          child_url = child_url + child + '/'
-          child_nav = original[child_url]
-          if child_nav.nil?
-            child_nav = redirect_node(child)
-            original[child_url] = child_nav
-            (parent.nil? ? nav_data : (parent['children'] ||= [])) << child_nav 
-          end
-          child_nav
-        end
-        nav_copy = {}.merge(nav)
-        nav_copy.delete(:orphan_url)
-        (parent['children'] ||= []) << nav_copy
-      end
-      nav_data.reject! { |nav| nav[:orphan_url] }
-    end
-
-    def self.redirect_node(parent_slug)
-      { 'text' => parent_slug.split('-').join(' ').capitalize,
-        'url' => parent_slug + '/',
-        'internal' => true,
-        'redirect' => true,
-      }
-    end
-
     def self.check_for_orphaned_items(nav_data)
-      orphan_urls = orphans(nav_data).map(&:orphan_url)
+      orphan_urls = nav_data.map { |nav| nav[:orphan_url] }.compact
       unless orphan_urls.empty?
         fail(StandardError, "Parent pages missing for the following:\n  " +
           orphan_urls.join("\n  "))
       end
-    end
-
-    def self.orphans(nav_data)
-      nav_data.select { |nav| nav[:orphan_url] }
     end
 
     def self.write_navigation_data_to_config_file(config_path, nav_data)
@@ -277,6 +241,50 @@ module GuidesStyle18F
 
     def self.format_navigation_section(nav_data)
       nav_data.empty? ? '' : nav_data.to_yaml[YAML_PREFIX.size..-1]
+    end
+  end
+
+  class NavigationRedirectNodes
+    def self.generate(original, nav_data)
+      orphans = nav_data.select { |nav| nav[:orphan_url] }
+      orphans.each { |nav| create_home_for_orphan(nav, nav_data, original) }
+      nav_data.reject! { |nav| nav[:orphan_url] }
+    end
+
+    def self.create_home_for_orphan(nav, nav_data, original)
+      parents = parse_parents_from_orphan_url(nav)
+      child_url = '/'
+      immediate_parent = parents.reduce(nil) do |parent, child|
+        child_url = child_url + child + '/'
+        link_parent_to_child(nav_data, child_url, parent, child, original)
+      end
+      nav_copy = {}.merge(nav)
+      nav_copy.delete(:orphan_url)
+      (immediate_parent['children'] ||= []) << nav_copy
+    end
+
+    def self.parse_parents_from_orphan_url(nav)
+      parent_url = File.dirname(nav[:orphan_url])
+      # Trim off the leading slash.
+      parent_url[1..parent_url.size - 1].split('/')
+    end
+
+    def self.link_parent_to_child(nav_data, child_url, parent, child, original)
+      child_nav = original[child_url]
+      if child_nav.nil?
+        child_nav = redirect_node(child)
+        original[child_url] = child_nav
+        (parent.nil? ? nav_data : (parent['children'] ||= [])) << child_nav
+      end
+      child_nav
+    end
+
+    def self.redirect_node(parent_slug)
+      { 'text' => parent_slug.split('-').join(' ').capitalize,
+        'url' => parent_slug + '/',
+        'internal' => true,
+        'redirect' => true,
+      }
     end
   end
 end
