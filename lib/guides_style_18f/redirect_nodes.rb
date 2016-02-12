@@ -17,7 +17,8 @@ module GuidesStyle18F
     end
 
     def self.create_home_for_orphan(nav, nav_data, original)
-      parents = parse_parents_from_orphan_url(nav)
+      parents = nav[:orphan_url].split('/')[1..-1]
+      nav['url'] = parents.pop + '/'
       child_url = '/'
       immediate_parent = parents.reduce(nil) do |parent, child|
         child_url = child_url + child + '/'
@@ -26,12 +27,6 @@ module GuidesStyle18F
       nav_copy = {}.merge(nav)
       nav_copy.delete(:orphan_url)
       (immediate_parent['children'] ||= []) << nav_copy
-    end
-
-    def self.parse_parents_from_orphan_url(nav)
-      parent_url = File.dirname(nav[:orphan_url])
-      # Trim off the leading slash.
-      parent_url[1..parent_url.size - 1].split('/')
     end
 
     def self.link_parent_to_child(nav_data, child_url, parent, child, original)

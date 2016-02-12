@@ -172,7 +172,9 @@ module GuidesStyle18F
     def self.remove_stale_nav_entries(nav_data, original, updated)
       # Remove old entries whose pages have been deleted
       original.each do |url, nav|
-        nav['delete'] = true if !updated.member?(url) && nav['internal']
+        if !updated.member?(url) && nav['internal'] && !nav['redirect']
+          nav['delete'] = true
+        end
       end
       original.delete_if { |_url, nav| nav['delete'] }
       nav_data.delete_if { |nav| nav['delete'] }
