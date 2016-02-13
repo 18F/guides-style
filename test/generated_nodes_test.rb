@@ -28,22 +28,22 @@ module GuidesStyle18F
 
     def test_empty_nav_data
       nav_data = []
-      original = generate_url_map(nav_data)
-      GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      url_to_nav = generate_url_map(nav_data)
+      GeneratedNodes.create_homes_for_orphans(url_to_nav, nav_data)
       assert_empty(nav_data)
     end
 
     def test_single_home_page_nav_entry
       nav_data = [page_nav('/', 'Introduction')]
-      original = generate_url_map(nav_data)
-      GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      url_to_nav = generate_url_map(nav_data)
+      GeneratedNodes.create_homes_for_orphans(url_to_nav, nav_data)
       assert_equal([page_nav('/', 'Introduction')], nav_data)
     end
 
     def test_single_orphan
       nav_data = [page_nav('/foo/bar/', 'Bar info', orphan: true)]
-      original = generate_url_map(nav_data)
-      GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      url_to_nav = generate_url_map(nav_data)
+      GeneratedNodes.create_homes_for_orphans(url_to_nav, nav_data)
       assert_equal(
         [page_nav(
           'foo/', 'Foo',
@@ -59,8 +59,8 @@ module GuidesStyle18F
         page_nav('/foo/baz/', 'Baz info', orphan: true),
         page_nav('/foo/quux/', 'Quux info', orphan: true),
       ]
-      original = generate_url_map(nav_data)
-      GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      url_to_nav = generate_url_map(nav_data)
+      GeneratedNodes.create_homes_for_orphans(url_to_nav, nav_data)
       assert_equal(
         [page_nav(
           'foo/', 'Foo',
@@ -76,8 +76,8 @@ module GuidesStyle18F
 
     def test_nested_orphan
       nav_data = [page_nav('/foo/bar/baz/', 'Baz info', orphan: true)]
-      original = generate_url_map(nav_data)
-      GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      url_to_nav = generate_url_map(nav_data)
+      GeneratedNodes.create_homes_for_orphans(url_to_nav, nav_data)
       assert_equal(
         [page_nav(
           'foo/', 'Foo',
@@ -104,10 +104,10 @@ module GuidesStyle18F
               children: [page_nav('baz/', 'Baz info')])
           ])
       ]
-      original = generate_url_map(nav_data)
+      url_to_nav = generate_url_map(nav_data)
       updated = { '/foo/bar/baz/': true }
       refute_empty(
-        NavigationMenu.remove_stale_nav_entries(nav_data, original, updated))
+        NavigationMenu.remove_stale_nav_entries(nav_data, url_to_nav, updated))
     end
 
     def test_childless_parent_nodes_are_pruned
@@ -119,8 +119,8 @@ module GuidesStyle18F
         )
       ]
 
-      original = generate_url_map(nav_data)
-      GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      url_to_nav = generate_url_map(nav_data)
+      GeneratedNodes.create_homes_for_orphans(url_to_nav, nav_data)
       assert_empty(nav_data)
     end
 
@@ -129,8 +129,8 @@ module GuidesStyle18F
         page_nav('/foo/bar/', 'Bar info', orphan: true),
         page_nav('/foo/bar/baz/', 'Baz info', orphan: true),
       ]
-      original = generate_url_map(nav_data)
-      GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      url_to_nav = generate_url_map(nav_data)
+      GeneratedNodes.create_homes_for_orphans(url_to_nav, nav_data)
       assert_equal(
         [page_nav(
           'foo/', 'Foo',
@@ -156,18 +156,18 @@ module GuidesStyle18F
               children: [page_nav('baz/', 'Baz info')])
           ])
       ]
-      original = generate_url_map(nav_data)
+      url_to_nav = generate_url_map(nav_data)
       updated = {
         '/foo/' => page_nav('foo/', 'Foo info'),
         '/foo/bar/baz/' => page_nav('baz/', 'Baz info'),
       }
 
-      NavigationMenu.remove_stale_nav_entries(nav_data, original, updated)
+      NavigationMenu.remove_stale_nav_entries(nav_data, url_to_nav, updated)
       updated.map do |url, nav|
-        NavigationMenu.apply_nav_update(url, nav, nav_data, original)
+        NavigationMenu.apply_nav_update(url, nav, nav_data, url_to_nav)
       end
 
-      GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      GeneratedNodes.create_homes_for_orphans(url_to_nav, nav_data)
       assert_equal(
         [
           page_nav(
