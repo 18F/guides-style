@@ -10,12 +10,11 @@ require 'jekyll'
 module GuidesStyle18F
   class Generator < ::Jekyll::Generator
     def generate(site)
-      Layouts.register site
-      Assets.copy_to_site site
+      Layouts.register(site)
+      Assets.copy_to_site(site)
       pages = site.collections['pages']
       docs = (pages.nil? ? [] : pages.docs) + site.pages
-      breadcrumbs = Breadcrumbs.create(site)
-      docs.each { |page| page.data['breadcrumbs'] = breadcrumbs[page.url] }
+      Breadcrumbs.generate(site, docs)
       NamespaceFlattener.flatten_url_namespace(site, docs)
     end
   end

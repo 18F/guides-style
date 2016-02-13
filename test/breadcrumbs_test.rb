@@ -19,13 +19,13 @@ module GuidesStyle18F
     end
 
     def test_empty_data
-      assert_empty(Breadcrumbs.create(site))
+      assert_empty(Breadcrumbs.create_breadcrumbs(site))
     end
 
     def test_single_nav_item_for_home_page_without_url_member
       site.config['navigation'] = [{ 'text' => 'Introduction' }]
       expected = { '/' => [{ 'url' => '/', 'text' => 'Introduction' }] }
-      assert_equal(expected, Breadcrumbs.create(site))
+      assert_equal(expected, Breadcrumbs.create_breadcrumbs(site))
     end
 
     def test_multiple_nav_items
@@ -37,7 +37,7 @@ module GuidesStyle18F
         '/' => [{ 'url' => '/', 'text' => 'Introduction' }],
         '/foo/' => [{ 'url' => '/foo/', 'text' => 'Foo info' }],
       }
-      assert_equal(expected, Breadcrumbs.create(site))
+      assert_equal(expected, Breadcrumbs.create_breadcrumbs(site))
     end
 
     # rubocop:disable MethodLength
@@ -85,7 +85,7 @@ module GuidesStyle18F
           { 'url' => '/quux/xyzzy/plugh/', 'text' => 'Plugh info' },
         ],
       }
-      assert_equal(expected, Breadcrumbs.create(site))
+      assert_equal(expected, Breadcrumbs.create_breadcrumbs(site))
     end
     # rubocop:enable MethodLength
   end
