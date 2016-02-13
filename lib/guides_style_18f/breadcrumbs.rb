@@ -5,7 +5,9 @@ module GuidesStyle18F
   class Breadcrumbs
     def self.generate(site, docs)
       breadcrumbs = create_breadcrumbs(site)
-      docs.each { |page| page.data['breadcrumbs'] = breadcrumbs[page.url] }
+      docs.each do |page|
+        page.data['breadcrumbs'] = breadcrumbs[page.permalink || page.url]
+      end
     end
 
     def self.create_breadcrumbs(site)
