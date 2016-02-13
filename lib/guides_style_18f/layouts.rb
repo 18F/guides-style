@@ -7,11 +7,13 @@ module GuidesStyle18F
   # We have to essentially recreate the ::Jekyll::Layout constructor to loosen
   # the default restriction that layouts be included in the site source.
   class Layouts < ::Jekyll::Layout
+    LAYOUTS_DIR = File.join(File.dirname(__FILE__), 'layouts')
+
     private_class_method :new
 
-    def initialize(site, layout_file)
+    def initialize(site, subdir, layout_file)
       @site = site
-      @base = File.join File.dirname(__FILE__), 'layouts'
+      @base = File.join(LAYOUTS_DIR, subdir)
       @name = "#{layout_file}.html"
       @path = File.join @base, @name
       parse_content_and_data File.join(@base, name)
@@ -20,7 +22,7 @@ module GuidesStyle18F
 
     def parse_content_and_data(file_path)
       self.data = {}
-      self.content = File.read file_path
+      self.content = File.read(file_path)
 
       front_matter_pattern = /^(---\n.*)---\n/m
       front_matter_match = front_matter_pattern.match content
@@ -32,7 +34,9 @@ module GuidesStyle18F
     private :parse_content_and_data
 
     def self.register(site)
-      site.layouts['guides_style_18f_default'] = new site, 'default'
+      site.layouts['guides_style_18f_default'] = new(site, '', 'default')
+      site.layouts['guides_style_18f_generated_home_redirect'] = new(
+        site, 'generated', 'home-redirect')
     end
   end
 end
