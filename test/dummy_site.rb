@@ -1,6 +1,6 @@
 module GuidesStyle18F
   class DummySite
-    attr_accessor :config, :layouts, :static_files, :collections
+    attr_accessor :config, :layouts, :static_files, :collections, :pages
     attr_accessor :permalink_style
 
     def initialize
@@ -8,6 +8,7 @@ module GuidesStyle18F
       @layouts = {}
       @static_files = []
       @collections = {}
+      @pages = []
       @permalink_style = 'pretty'
     end
 
