@@ -34,7 +34,7 @@ module GuidesStyle18F
     end
 
     def flat_url(url)
-      File.join('', File.basename(url), '')
+      url == '/' ? url : "/#{url.split('/')[1..-1].last}/"
     end
 
     def check_for_collisions(flat_to_orig)
