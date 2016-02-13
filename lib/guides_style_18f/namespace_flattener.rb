@@ -6,15 +6,17 @@ module GuidesStyle18F
 
     def self.flatten_urls(docs)
       flat_to_orig = {}
-      docs.each do |page|
-        flattened_url = flat_url(page.url)
-        (flat_to_orig[flattened_url] ||= []) << page.url
-        page.data['permalink'] = flattened_url
-        (page.data['breadcrumbs'] || []).each do |crumb|
-          crumb['url'] = flat_url(crumb['url'])
-        end
-      end
+      docs.each { |page| flatten_page_urls(page, flat_to_orig) }
       check_for_collisions(flat_to_orig)
+    end
+
+    def self.flatten_page_urls(page, flat_to_orig)
+      flattened_url = flat_url(page.url)
+      (flat_to_orig[flattened_url] ||= []) << page.url
+      page.data['permalink'] = flattened_url
+      (page.data['breadcrumbs'] || []).each do |crumb|
+        crumb['url'] = flat_url(crumb['url'])
+      end
     end
 
     def self.flat_url(url)
