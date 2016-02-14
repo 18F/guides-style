@@ -366,38 +366,7 @@ header div.wrap div.back-link a:hover{ text-decoration: none; }
         overflow: hidden;
         white-space: nowrap;
     }
-    header div.search-interface{
-        width: 30%;
-        float: right;
-    }
 }
-
-
-header div.search-interface input{
-    display: block;
-    -webkit-box-sizing: border-box;
-    width: 100%;
-    padding: 6px 4px;
-    padding-left: 2em;
-    font: inherit;
-    border-radius: 3px;
-    border: 1px solid #ccc;
-    background: url(../svg/search.svg) 6px 45% no-repeat;
-    background-size: 16px;
-}
-
-ul.searchresultspopup{ border-radius: 3px; }
-ul.searchresultspopup li{ padding: 0; }
-ul.searchresultspopup li a{
-    padding: 4px;
-    display: block;
-    color: inherit;
-}
-ul.searchresultspopup li.ng-scope.selected a{
-    background: #333;
-    color: white;
-}
-
 
 .main-content img {
   max-width: 100%;

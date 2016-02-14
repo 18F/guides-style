@@ -8,6 +8,7 @@ module GuidesStyle18F
   # the default restriction that layouts be included in the site source.
   class Layouts < ::Jekyll::Layout
     LAYOUTS_DIR = File.join(File.dirname(__FILE__), 'layouts')
+    SEARCH_RESULTS_LAYOUT = 'search-results'
 
     private_class_method :new
 
@@ -37,6 +38,15 @@ module GuidesStyle18F
       site.layouts['guides_style_18f_default'] = new(site, '', 'default')
       site.layouts['guides_style_18f_generated_home_redirect'] = new(
         site, 'generated', 'home-redirect')
+      register_search_results_layout(site)
+    end
+
+    def self.register_search_results_layout(site)
+      layouts_dir = File.join(site.source, site.config['layouts_dir'])
+      if !File.exist?(File.join(layouts_dir, "#{SEARCH_RESULTS_LAYOUT}.html"))
+        site.layouts[SEARCH_RESULTS_LAYOUT] = new(
+          site, '', SEARCH_RESULTS_LAYOUT)
+      end
     end
   end
 end
