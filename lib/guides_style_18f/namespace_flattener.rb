@@ -11,8 +11,9 @@ module GuidesStyle18F
     end
 
     def self.flatten_page_urls(page, flat_to_orig)
-      flattened_url = flat_url(page.url)
-      (flat_to_orig[flattened_url] ||= []) << page.url
+      orig_url = page.permalink || page.url
+      flattened_url = flat_url(orig_url)
+      (flat_to_orig[flattened_url] ||= []) << orig_url
       page.data['permalink'] = flattened_url
       (page.data['breadcrumbs'] || []).each do |crumb|
         crumb['url'] = flat_url(crumb['url'])
