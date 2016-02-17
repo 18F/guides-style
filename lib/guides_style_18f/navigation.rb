@@ -1,5 +1,7 @@
 # @author Mike Bland (michael.bland@gsa.gov)
 
+require_relative './generated_nodes'
+
 require 'jekyll'
 require 'safe_yaml'
 
@@ -122,19 +124,22 @@ module GuidesStyle18F
     config_data = SafeYAML.load_file config_path, safe: true
     return unless config_data
     nav_data = config_data['navigation'] || []
-    NavigationMenu.update_navigation_data(nav_data, basedir)
-    NavigationMenu.write_navigation_data_to_config_file(config_path, nav_data)
+    NavigationMenu.update_navigation_data(nav_data, basedir, config_data)
+    NavigationMenuWriter.write_navigation_data_to_config_file(
+      config_path, nav_data)
   end
 
-  private
-
   module NavigationMenu
-    def self.update_navigation_data(nav_data, basedir)
+    def self.update_navigation_data(nav_data, basedir, config_data)
       original = map_nav_items_by_url('/', nav_data).to_h
       updated = updated_nav_data(basedir)
       remove_stale_nav_entries(nav_data, original, updated)
       updated.map { |url, nav| apply_nav_update(url, nav, nav_data, original) }
-      check_for_orphaned_items(nav_data)
+      if config_data['generate_nodes']
+        GeneratedNodes.create_homes_for_orphans(original, nav_data)
+      else
+        check_for_orphaned_items(nav_data)
+      end
     end
 
     def self.map_nav_items_by_url(parent_url, nav_data)
@@ -168,7 +173,9 @@ module GuidesStyle18F
     def self.remove_stale_nav_entries(nav_data, original, updated)
       # Remove old entries whose pages have been deleted
       original.each do |url, nav|
-        nav['delete'] = true if !updated.member?(url) && nav['internal']
+        if !updated.member?(url) && nav['internal'] && !nav['generated']
+          nav['delete'] = true
+        end
       end
       original.delete_if { |_url, nav| nav['delete'] }
       nav_data.delete_if { |nav| nav['delete'] }
@@ -188,6 +195,7 @@ module GuidesStyle18F
         apply_new_nav_item(url, nav, nav_data, original)
       else
         orig['text'] = nav['text']
+        orig.delete('generated')
       end
     end
 
@@ -197,20 +205,22 @@ module GuidesStyle18F
       if parent_url == '/'
         nav_data << (original[url] = nav)
       elsif parent.nil?
-        nav_data << { orphan_url: url }
+        nav_data << nav.merge(orphan_url: url)
       else
         (parent['children'] ||= []) << nav
       end
     end
 
     def self.check_for_orphaned_items(nav_data)
-      orphans = nav_data.map { |nav| nav[:orphan_url] }.compact
-      unless orphans.empty?
+      orphan_urls = nav_data.map { |nav| nav[:orphan_url] }.compact
+      unless orphan_urls.empty?
         fail(StandardError, "Parent pages missing for the following:\n  " +
-          orphans.join("\n  "))
+          orphan_urls.join("\n  "))
       end
     end
+  end
 
+  class NavigationMenuWriter
     def self.write_navigation_data_to_config_file(config_path, nav_data)
       lines = []
       in_navigation = false
