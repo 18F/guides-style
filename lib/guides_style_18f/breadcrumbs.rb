@@ -3,7 +3,12 @@ require 'safe_yaml'
 
 module GuidesStyle18F
   class Breadcrumbs
-    def self.create(site)
+    def self.generate(site, docs)
+      breadcrumbs = create_breadcrumbs(site)
+      docs.each { |page| page.data['breadcrumbs'] = breadcrumbs[page.url] }
+    end
+
+    def self.create_breadcrumbs(site)
       (site.config['navigation'] || []).flat_map do |nav|
         Breadcrumbs.generate_breadcrumbs(nav, '/', [])
       end.to_h
