@@ -20,4 +20,4 @@ $(function() {
 anchors.options = {
   visible: 'touch'
 };
-anchors.add('h3,h4,h5');
+anchors.add('main h1, main h2, main h3, main h4, main h5');
