@@ -8,6 +8,7 @@ module GuidesStyle18F
     _pages/add-a-new-page/make-a-child-page.md
     _pages/add-a-new-page.md
     _pages/add-images.md
+    _pages/advanced-features.md
     _pages/github-setup.md
     _pages/images.png
     _pages/post-your-guide.md
