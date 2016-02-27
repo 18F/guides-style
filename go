@@ -43,7 +43,7 @@ def_command :lint, 'Run style-checking tools' do |files|
   lint_ruby files
 end
 
-def_command :build, 'Execute continuous integration build' do
+def_command :build, 'Test and build the gem' do
   test
   exec_cmd 'rake build'
 end
