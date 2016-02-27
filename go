@@ -43,9 +43,9 @@ def_command :lint, 'Run style-checking tools' do |files|
   lint_ruby files
 end
 
-def_command :build, 'Test and build the gem' do
+def_command :build, 'Test and build the gem' do |args|
   test
-  exec_cmd 'rake build'
+  exec_cmd "rake build #{args_to_string args}"
 end
 
 def_command :release, 'Test, build, and release a new gem' do
