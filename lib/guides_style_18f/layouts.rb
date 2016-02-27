@@ -43,7 +43,8 @@ module GuidesStyle18F
 
     def self.register_search_results_layout(site)
       layouts_dir = File.join(site.source, site.config['layouts_dir'])
-      if !File.exist?(File.join(layouts_dir, "#{SEARCH_RESULTS_LAYOUT}.html"))
+      results_layout = File.join(layouts_dir, "#{SEARCH_RESULTS_LAYOUT}.html")
+      unless File.exist?(results_layout)
         site.layouts[SEARCH_RESULTS_LAYOUT] = new(
           site, '', SEARCH_RESULTS_LAYOUT)
       end
