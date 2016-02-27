@@ -90,6 +90,7 @@ GO_SCRIPT
       File.read File.join(repo_dir, 'go')
     end
 
+    # rubocop:disable MethodLength
     def create_initial_repo(logfile)
       Dir.chdir repo_dir do
         logfile.puts '*** Creating initial repository.'
@@ -98,9 +99,17 @@ GO_SCRIPT
         GuidesStyle18F.exec_cmd_capture_output 'git init', logfile
         GuidesStyle18F.exec_cmd_capture_output 'git add .', logfile
         GuidesStyle18F.exec_cmd_capture_output(
+          'git config user.email "test@example.com"', logfile)
+        GuidesStyle18F.exec_cmd_capture_output(
+          'git config user.name "Test User"', logfile)
+        GuidesStyle18F.exec_cmd_capture_output(
           'git commit -m "original repo"', logfile)
       end
+    rescue SystemExit => e
+      flunk("Exited with status: #{e.status}\n" \
+        "Logfile contents: #{File.read(logfile)}")
     end
+    # rubocop:enable MethodLength
   end
 
   class RemoveTemplateFilesTest < ::Minitest::Test
@@ -156,7 +165,7 @@ GO_SCRIPT
       assert_log_tail_matches_expected log_path
       assert_new_repo_has_nontemplate_files_staged_for_commit
     rescue
-      puts File.read log_path
+      puts("Log contents: #{File.read(log_path)}")
       raise
     end
 
