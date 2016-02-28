@@ -186,7 +186,7 @@ GO_SCRIPT
     def log_tail(repo_dir)
       # On some systems, repo_dir may be a symlink, but git will print the
       # real path.
-      format LOG_TAIL, File.realpath(repo_dir)
+      format(LOG_TAIL, Dir.glob(File.realpath(repo_dir)).first)
     end
 
     LOG_TAIL_MARKER = '*** Clearing template files and creating new repository.'
