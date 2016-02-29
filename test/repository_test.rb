@@ -18,7 +18,7 @@ module GuidesStyle18F
     end
 
     def teardown
-      FileUtils.remove_entry(testdir)
+      FileUtils.rm_rf(testdir, secure: true)
     end
 
     def map_files_to_repo_dir(filenames)
