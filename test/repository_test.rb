@@ -18,7 +18,7 @@ module GuidesStyle18F
     end
 
     def teardown
-      FileUtils.rm_rf testdir
+      FileUtils.rm_rf(testdir, secure: true)
     end
 
     def map_files_to_repo_dir(filenames)
@@ -90,6 +90,7 @@ GO_SCRIPT
       File.read File.join(repo_dir, 'go')
     end
 
+    # rubocop:disable MethodLength
     def create_initial_repo(logfile)
       Dir.chdir repo_dir do
         logfile.puts '*** Creating initial repository.'
@@ -98,9 +99,17 @@ GO_SCRIPT
         GuidesStyle18F.exec_cmd_capture_output 'git init', logfile
         GuidesStyle18F.exec_cmd_capture_output 'git add .', logfile
         GuidesStyle18F.exec_cmd_capture_output(
+          'git config user.email "test@example.com"', logfile)
+        GuidesStyle18F.exec_cmd_capture_output(
+          'git config user.name "Test User"', logfile)
+        GuidesStyle18F.exec_cmd_capture_output(
           'git commit -m "original repo"', logfile)
       end
+    rescue SystemExit => e
+      flunk("Exited with status: #{e.status}\n" \
+        "Logfile contents: #{File.read(logfile)}")
     end
+    # rubocop:enable MethodLength
   end
 
   class RemoveTemplateFilesTest < ::Minitest::Test
@@ -156,7 +165,7 @@ GO_SCRIPT
       assert_log_tail_matches_expected log_path
       assert_new_repo_has_nontemplate_files_staged_for_commit
     rescue
-      puts File.read log_path
+      puts("Log contents: #{File.read(log_path)}")
       raise
     end
 
@@ -177,7 +186,7 @@ GO_SCRIPT
     def log_tail(repo_dir)
       # On some systems, repo_dir may be a symlink, but git will print the
       # real path.
-      format LOG_TAIL, File.realpath(repo_dir)
+      format(LOG_TAIL, Dir.glob(File.realpath(repo_dir)).first)
     end
 
     LOG_TAIL_MARKER = '*** Clearing template files and creating new repository.'

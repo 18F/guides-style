@@ -28,14 +28,14 @@ module GuidesStyle18F
     ].join("\n")
 
     def setup
-      @testdir = Dir.mktmpdir
+      @testdir = Dir.glob(Dir.mktmpdir).first
       @config_path = File.join testdir, '_config.yml'
       @pages_dir = File.join testdir, '_pages'
       FileUtils.mkdir_p pages_dir
     end
 
     def teardown
-      FileUtils.remove_entry testdir
+      FileUtils.rm_rf(testdir, secure: true)
     end
 
     def write_config(config_data, with_collections: true)
