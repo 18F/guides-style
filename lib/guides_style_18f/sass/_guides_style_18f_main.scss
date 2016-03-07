@@ -146,7 +146,7 @@ a.title-link:focus {
 }
 
 a.skip-link {
-    color: #0072ce;
+    color: #fff;
     padding: .25em;
 }
 
@@ -391,6 +391,9 @@ footer {
     background: #f1f2f2;
     width: 100%;
     font-size: 0.875em;
+    a {
+        color: #006FC9;
+    }
 }
 
 footer .wrap {
