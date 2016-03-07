@@ -115,7 +115,7 @@ a {
 a,
 a:link,
 a:visited {
-    color: #0072ce;
+    color: #006FC9;
     text-decoration: none;
 }
 
@@ -130,7 +130,7 @@ a:active {
 }
 
 a:focus {
-    color: #0072ce;
+    color: #006FC9;
     outline: thin dotted;
     text-decoration: none;
 }
@@ -146,14 +146,14 @@ a.title-link:focus {
 }
 
 a.skip-link {
-    color: #0072ce;
+    color: #fff;
     padding: .25em;
 }
 
 a.skip-link:hover,
 a.skip-link:active,
 a.skip-link:focus {
-    background-color: #0072ce;
+    background-color: #006FC9;
     color: #fff;
 }
 
