@@ -426,8 +426,7 @@ WITH_NAVTITLE
           GuidesStyle18F.update_navigation_configuration testdir
         end
         assert_equal 1, exception.status
-        assert_equal(EXPECTED_ERRORS + "_config.yml not updated\n",
-          $stderr.string)
+        assert($stderr.string.include? EXPECTED_ERRORS + "_config.yml not updated\n")
       end
     end
   end
