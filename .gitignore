@@ -17,4 +17,4 @@ Gemfile.lock
 
 # Ignore `bundle install --path=vendor/bundle` artifacts
 .bundle/
-vendor/
+/vendor/
