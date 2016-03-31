@@ -5,6 +5,7 @@ $(function() {
 
   // https://github.com/18F/private-eye#usage
   PrivateEye({
+    defaultMessage: "This link is private to 18F.",
     ignoreUrls: [
       'https://docs.google.com',
       'https://drive.google.com',
@@ -15,4 +16,3 @@ $(function() {
     ]
   });
 });
-
