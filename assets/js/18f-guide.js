@@ -10,9 +10,16 @@ $(function() {
       'https://docs.google.com',
       'https://drive.google.com',
       'https://github.com/18F/Accessibility_Reviews',
+      'https://github.com/18F/blog-drafts',
+      'https://github.com/18F/codereviews',
       'https://github.com/18F/DevOps',
       'https://github.com/18F/handbook',
-      'https://github.com/18F/writing-lab'
+      'https://github.com/18F/Infrastructure',
+      'https://github.com/18F/staffing-and-resources',
+      'https://github.com/18F/team-api.18f.gov',
+      'https://github.com/18F/writing-lab',
+      'https://gsa.my.salesforce.com',
+      'https://insite.gsa.gov'
     ]
   });
 });
