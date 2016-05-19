@@ -212,13 +212,17 @@ Navigation
   border-bottom: none;
 }
 
+.nav-children[aria-hidden=true] {
+    max-height: 0;
+}
+
 .nav-children {
     clear: both;
     display: block;
     font-size: 14px;
-    max-height: 0;
-    opacity: 0;
+    max-height: initial;
     overflow: auto;
+    opacity: 1;
     position: relative;
     -webkit-transition: max-height .2s, opacity .2s;
     -moz-transition: max-height .2s, opacity .2s;
@@ -276,21 +280,6 @@ Navigation
     -moz-transform: rotate(45deg);
     -o-transform: rotate(45deg);
     transform: rotate(45deg);
-}
-
-
-.nav-children[aria-hidden=true] {
-    max-height: 0;
-}
-
-.nav-children {
-    display: block;
-    max-height: 400px;
-    opacity: 1;
-    -webkit-transition: max-height .2s, opacity .2s;
-    -moz-transition: max-height .2s, opacity .2s;
-    -o-transition: max-height .2s, opacity .2s;
-    transition: max-height .2s, opacity .2s;
 }
 
 /*
