@@ -7,6 +7,7 @@ $(function() {
   PrivateEye({
     defaultMessage: "This link is private to 18F.",
     ignoreUrls: [
+      'https://18f.slack.com',
       'https://docs.google.com',
       'https://drive.google.com',
       'https://github.com/18F/Accessibility_Reviews',
