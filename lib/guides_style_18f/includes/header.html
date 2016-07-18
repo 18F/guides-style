@@ -1,38 +1,40 @@
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta charset="utf-8">
-  <title>{{ page.title }} - {{ site.name }}</title>
   <meta name="viewport" content="width=device-width">
 
 
 
-{% if site.url %}
-  <!-- Twitter and OpenGraph data
 
-This section is enabled if site.url is set.
-
+  <!-- Title, Twitter, and OpenGraph data
 ================================================== -->
 
   <meta name="twitter:site" content="@18F">
   <meta name="twitter:creator" content="@18F">
-  <meta property="og:site_name" content="{{ site.title | xml_escape }}" />
   <meta property="og:type" content="website" />
 
-  <meta property="og:url" content="{{ site.url }}{{ page.url }}" />
-  <link rel="canonical" href="{{ site.url }}{{ page.url }}" />
+  {% if site.title %}
+    <meta property="og:site_name" content="{{ site.title | xml_escape }}" />
+  {% endif %}
+
+  {% if site.url %}
+    <meta property="og:url" content="{{ site.url }}{{ page.url }}" />
+    <link rel="canonical" href="{{ site.url }}{{ page.url }}" />
+  {% endif %}
 
   <!-- title, description, and image may change per-page, per-post -->
   {% if page.title %}
-    <title>18F &mdash; {{ page.title }}</title>
-    <meta property="og:title" content="{{ page.title | xml_escape }}" />
-  {% else %}
-    <title>{{ site.title }}</title>
-    <meta property="og:title" content="{{ site.title | xml_escape }}" />
+    <title>{{ page.title }} - {{ site.name }}</title>
+    <meta property="og:title" content="{{ page.title | xml_escape }} - {{ site.name }}" />
+  {% elsif site.title %}
+    <title>{{ site.title }} - {{ site.name }}</title>
+    <meta property="og:title" content="{{ site.title | xml_escape }} - {{ site.name }}" />
   {% endif %}
+
   {% if page.description %}
     <meta name="description" content="{{ page.description | xml_escape }}">
     <meta property="og:description" content="{{ page.description | xml_escape }}" />
-  {% else %}
+  {% elsif site.description %}
     <meta name="description" content="{{ site.description | xml_escape }}">
     <meta property="og:description" content="{{ site.description | xml_escape }}" />
   {% endif %}
@@ -45,8 +47,6 @@ This section is enabled if site.url is set.
     <meta name="twitter:card" content="summary">
     <meta property="og:image" content="https://18f.gsa.gov/assets/images/18F-Logo-L.png" />
   {% endif %}
-
-{% endif %}
 
   <!-- If any of the file paths after guides_style_18f_asset_root change, the old ones need to stay in place. See https://github.com/18F/pages-server/issues/55 for more information. -->
   <link rel="shortcut icon" type="image/ico" href="{% guides_style_18f_asset_root %}/assets/favicons/favicon.ico" />
