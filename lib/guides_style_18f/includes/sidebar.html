@@ -1,7 +1,6 @@
-<aside>
-  <p class="intro">{{ site.subtitle }}</p>
-  <nav class="sidebar-nav" role="navigation">
-    <ul>{% for link in site.navigation %}{% capture parent_url %}/{{ link.url }}{% endcapture %}
+<aside class="usa-width-one-fourth usa-layout-docs-sidenav">
+    <ul class="usa-sidenav-list">
+        {% for link in site.navigation %}{% capture parent_url %}/{{ link.url }}{% endcapture %}
         <li class="group {% if page.url == parent_url %}sidebar-nav-active{% endif %}">
           <a href="{% if link.internal == true %}{{ site.baseurl }}/{% endif %}{{ link.url }}"  
             title="{% if page.url == parent_url %}Current Page
@@ -10,5 +9,4 @@
           {% guides_style_18f_include sidebar-children.html %}
         </li>{% endfor %}
     </ul>
-  </nav>
 </aside>
