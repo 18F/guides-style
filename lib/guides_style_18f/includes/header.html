@@ -33,19 +33,14 @@
       {% endif %}
 
       <div class="usa-nav-secondary">
+        <ul class="usa-unstyled-list usa-nav-secondary-links">
           {% if site.jekyll_pages_api_search %}
-          <form action="{{ _secondary.search.action | relative_url }}" class="usa-search usa-search-small js-search-form">
-          <div role="search">
+          <li>
+          <div role="search" class="usa-search usa-search-small">
             {% jekyll_pages_api_search_interface %}
           </div>
-        </form>
-        {% endif %}
-        <ul class="usa-unstyled-list usa-nav-secondary-links">
-        {% if site.jekyll_pages_api_search %}
-          <li class="js-search-button-container">
-            <button class="usa-header-search-button js-search-button">Search</button>
           </li>
-          {% endif %}
+        {% endif %}
           {% if site.back_link %}
           <li>
             <a href="{{ site.back_link.url }}">{{ site.back_link.text }}</a>

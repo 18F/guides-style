@@ -1,0 +1,18 @@
+/* Additional CSS needed to properly style the search bar.
+ * This is only necessary because we're using the
+ * jekyll_pages_api_search_interface tag instead of the USWDS markup. */
+
+.usa-search .search-interface .label-text {
+  position: absolute;
+  left: -999em;
+}
+
+.usa-search .search-interface [type=submit] {
+  color: rgba(0,0,0,0);
+}
+
+@media screen and (min-width: 951px) {
+  .usa-nav-secondary .usa-search {
+    margin-top: -3rem;
+  }
+}
