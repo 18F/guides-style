@@ -39,7 +39,8 @@
   <div class="usa-footer-secondary_section">
     <div class="usa-grid">
       <div class="usa-footer-logo">
-        <img src="{{ site.baseurl }}/assets/img/18f-logo.png" alt="18F logo">
+        {% assign logo = site.logopath | default: '/assets/img/18f-logo.png' %}
+        <img src="{{ site.baseurl }}{{ logo }}" alt="18F logo">
       </div>
     </div>
   </div>
