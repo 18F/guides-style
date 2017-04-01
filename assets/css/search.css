@@ -16,3 +16,9 @@
     margin-top: -3rem;
   }
 }
+
+@media screen and (max-width: 950px) {
+  .usa-nav-secondary {
+    margin-top: 6rem;
+  }
+}
