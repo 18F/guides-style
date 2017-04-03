@@ -6,8 +6,9 @@
   <div class="usa-footer-primary-section">
     <div class="usa-grid">
       <div class="usa-footer-logo usa-width-one-third">
-        {% assign logo = site.logopath | default: '/assets/img/18f-logo.png' %}
-        <img src="{{ site.baseurl }}{{ logo }}" alt="18F logo">
+        {% assign logo = site.logourl | default: '/assets/img/18f-logo.png' %}
+        {% assign logoalt = site.logoalt | default: '18F logo' %}
+        <img src="{{ site.baseurl }}{{ logo }}" alt="{{ logoalt }}">
       </div>
 
       <nav class="usa-footer-nav usa-width-one-third">
