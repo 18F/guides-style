@@ -1,0 +1,36 @@
+/* Addenda to the USWDS styles. */
+
+header,
+aside {
+  margin-bottom: 5rem; /* taken from WDS styleguide layout */
+}
+
+footer {
+  margin-top: 5rem;
+}
+
+.usa-footer-logo {
+  padding-top: 1rem;
+}
+
+.usa-footer-nav {
+  text-align: right;
+  border-right: 1px solid #d6d7d9;
+}
+
+.usa-footer-nav ul {
+  margin-right: 1rem;
+  padding-right: 1rem;
+}
+
+.usa-footer-slim .usa-footer-nav .usa-footer-primary-content {
+  margin-right: 0;
+}
+
+.usa-footer .usa-footer-primary-link {
+  padding: 0;
+}
+
+.usa-footer div:last-child .usa-footer-primary-content {
+  padding: 1rem 0;
+}
