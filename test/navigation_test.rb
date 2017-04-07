@@ -198,14 +198,6 @@ module GuidesStyle18F
       end
     end
 
-    def test_add_all_pages_from_scratch_without_collection
-      write_config_without_collection
-      move_home_page_and_create_external_page
-      add_permalinks(ALL_PAGES)
-      GuidesStyle18F.update_navigation_configuration testdir
-      assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
-    end
-
     CONFIG_WITH_EXTERNAL_PAGE = [
       COLLECTIONS_CONFIG,
       LEADING_COMMENT,
