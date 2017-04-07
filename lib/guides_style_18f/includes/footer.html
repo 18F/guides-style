@@ -1,5 +1,5 @@
 <footer class="usa-footer usa-footer-slim" role="contentinfo">
-  {% assign repo_url = site.repos[0].url %}
+  {% assign repo = site.repos[0] %}
   <div class="usa-grid usa-footer-return-to-top">
       <a href="#">Return to top</a>
   </div>
@@ -18,16 +18,18 @@
             18F Guides theme
             </a>
           </li>
+          {% if repo %}
           <li class="usa-footer-primary-content">
-            <a class="usa-footer-primary-link" href="{{ repo_url }}/edit/default_branch/{{ page.path }}">
+            <a class="usa-footer-primary-link" href="{{ repo.url }}/edit/{{ repo.default_branch | default: 'master' }}/{{ page.path }}">
             Edit this page
             </a>
           </li>
           <li class="usa-footer-primary-content">
-            <a class="usa-footer-primary-link" href="{{ repo_url }}/issues">
+            <a class="usa-footer-primary-link" href="{{ repo.url }}/issues">
             File an issue on GitHub
             </a>
           </li>
+          {% endif %}
         </ul>
       </nav>
       <div class="usa-width-one-third">
