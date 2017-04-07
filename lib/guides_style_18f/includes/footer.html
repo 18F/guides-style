@@ -1,9 +1,46 @@
-<footer role="contentinfo">
-  <div class="wrap">{% assign repo_url = site.repos[0].url %}
-    <p>This project is maintained by <a href="{{ site.author.url }}">{{ site.author.name }}</a>. The source is available at <a href="{{ repo_url }}">{{ repo_url }}</a>.</p>
+<footer class="usa-footer usa-footer-slim" role="contentinfo">
+  {% assign repo = site.repos[0] %}
+  <div class="usa-grid usa-footer-return-to-top">
+      <a href="#">Return to top</a>
+  </div>
+  <div class="usa-footer-primary-section">
+    <div class="usa-grid">
+      <div class="usa-footer-logo usa-width-one-third">
+        {% assign logo = site.logourl | default: '/assets/img/18f-logo.png' %}
+        {% assign logoalt = site.logoalt | default: '18F logo' %}
+        <img src="{{ site.baseurl }}{{ logo }}" alt="{{ logoalt }}">
+      </div>
 
-    <p>Hosted by <a href="https://github.com/18F/">18F</a>.
-    The <a href="https://github.com/18F/guides-template/">18F Guides theme</a> is based on <a href="https://github.com/cfpb/docter/">DOCter</a> from <a href="http://cfpb.github.io/">CFPB</a>.</p>
-    <p><a href="{{ repo_url }}/edit/18f-pages/{{ page.path }}">Edit this page</a> or <a href="{{ repo_url }}/issues">file an issue</a> on GitHub.</p>
-  </div><!--/.wrap -->
+      <nav class="usa-footer-nav usa-width-one-third">
+        <ul class="usa-unstyled-list">
+          <li class="usa-footer-primary-content">
+            <a class="usa-footer-primary-link" href="https://github.com/18F/guides-template/">
+            18F Guides theme
+            </a>
+          </li>
+          {% if repo %}
+          <li class="usa-footer-primary-content">
+            <a class="usa-footer-primary-link" href="{{ repo.url }}/edit/{{ repo.default_branch | default: 'master' }}/{{ page.path }}">
+            Edit this page
+            </a>
+          </li>
+          <li class="usa-footer-primary-content">
+            <a class="usa-footer-primary-link" href="{{ repo.url }}/issues">
+            File an issue on GitHub
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      <div class="usa-width-one-third">
+      <ul class="usa-unstyled-list">
+        <li class="usa-footer-primary-content">
+            Maintained by <a href="{{ site.author.url }}">{{ site.author.name }}</a>
+        </li>
+        <li class="usa-footer-primary-content">
+            Hosted by <a href="https://federalist.fr.cloud.gov/">Federalist</a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </footer>
