@@ -52,7 +52,6 @@ module GuidesStyle18F
 
   GIT_COMMANDS = {
     'Creating a new git repository.' => 'git init',
-    'Creating 18f-pages branch.' => 'git checkout -b 18f-pages',
     'Adding files for initial commit.' => 'git add .',
   }
 

@@ -196,8 +196,6 @@ Removing `:create_repo` command from the `./go` script.
 Removing old git repository.
 Creating a new git repository.
 Initialized empty Git repository in %s/.git/
-Creating 18f-pages branch.
-Switched to a new branch '18f-pages'
 Adding files for initial commit.
 All done! Run 'git commit' to create your first commit.
 LOG_TAIL
