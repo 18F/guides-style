@@ -14,7 +14,6 @@ $(function() {
       'https://github.com/18F/blog-drafts',
       'https://github.com/18F/codereviews',
       'https://github.com/18F/DevOps',
-      'https://github.com/18F/handbook',
       'https://github.com/18F/Infrastructure',
       'https://github.com/18F/staffing-and-resources',
       'https://github.com/18F/team-api.18f.gov',
