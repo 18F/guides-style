@@ -133,6 +133,10 @@ group :jekyll_plugins do
   gem 'guides_style_18f', :path => '../guides-style'
 end
 ```
+#### Running locally
+
+To test the guides style locally go to the directory where you have the guides-style 
+```./go build```
 
 You can find the different style assets and templates within subdirectories of
 the `assets` and `lib/guides_style_18f` directories of this repository. Edit
