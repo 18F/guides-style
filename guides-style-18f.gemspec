@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.summary       = '18F Guides Template style elements'
   s.description   = (
     'Provides consistent style elements for documents based on the ' \
-    '18F Guides Template (https://pages.18f.gov/guides-template/). ' \
+    '18F Guides Template (https://guides-template.18f.gov/). ' \
     'The 18F Guides theme is based on ' \
     'DOCter (https://github.com/cfpb/docter/) from ' \
     'CFPB (http://cfpb.github.io/).'
