@@ -36,11 +36,26 @@
         <ul class="usa-unstyled-list usa-nav-secondary-links">
           {% if site.jekyll_pages_api_search %}
           <li>
-          <div role="search" class="usa-search usa-search-small">
-            {% jekyll_pages_api_search_interface %}
-          </div>
+            <div role="search" class="usa-search usa-search-small">
+              {% jekyll_pages_api_search_interface %}
+            </div>
           </li>
-        {% endif %}
+          {% endif %}
+          {% if site.search_gov_handle %}
+          <li>
+            <div role="search" class="usa-search usa-search-small">
+              <form accept-charset="UTF-8" action="https://search.usa.gov/search" id="search_form" class="search-interface" method="get">
+                <input name="utf8" type="hidden" value="&#x2713;" />
+                <input id="affiliate" name="affiliate" type="hidden" value="{{ site.search_gov_handle }}" />
+                <label>
+                  <span class="label-text">Search</span>
+                  <input autocomplete="off" type="search" id="query" class="usagov-search-autocomplete" name="query" placeholder="Search">
+                </label>
+                <button name="commit" type="submit">Search</button>
+              </form>
+            </div>
+          </li>
+          {% endif %}
           {% if site.back_link %}
           <li>
             <a href="{{ site.back_link.url }}">{{ site.back_link.text }}</a>

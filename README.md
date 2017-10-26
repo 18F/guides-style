@@ -115,6 +115,46 @@ navigation:
     internal: true
 ```
 
+### Search
+
+There are two options for search.
+
+#### jekyll_pages_api_search
+
+Pros:
+
+* Generates a search index locally, which has the advantage of being self-contained. This means you can easily test search locally, on a staging site, etc.
+* Search results are shown in your site's layout
+
+Cons:
+
+* Slows down your build
+
+Usage: see [the instructions](https://github.com/18F/jekyll_pages_api_search#installation).
+
+#### search.gov
+
+Pros:
+
+* A hosted service, so your site has fewer moving parts.
+* A more full-featured search engine
+* Search results show a preview of the text on the page, with highlighted term(s)
+* Provides analytics
+
+Cons:
+
+* You need to register your site
+* Can't test search results locally
+
+Usage:
+
+1. Register your site at [search.gov](https://search.gov/).
+1. Add the following to your `_config.yml`:
+
+    ```yaml
+    search_gov_handle: <your Site Handle from the search.gov Settings page>
+    ```
+
 ### Development
 
 First, choose a Jekyll site you'd like to use to view the impact of your
