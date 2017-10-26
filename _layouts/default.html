@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="{{ page.lang | default: site.lang | default: 'en-US' }}">
 
-  {% guides_style_18f_include head.html %}
+  {% include head.html %}
 
   <body>
 
     <div class="container">
-      {% guides_style_18f_include header.html %}
+      {% include header.html %}
       <div class="usa-grid">
 
-        {% guides_style_18f_include sidebar.html %}
+        {% include sidebar.html %}
         <main id="main" class="usa-width-two-thirds usa-layout-docs-main_content" role="main">
           <h1>{{ page.title }}</h1>
           {{ content }}
@@ -18,11 +18,11 @@
 
       </div><!-- /.wrap content -->
 
-      {% guides_style_18f_include footer.html %}
+      {% include footer.html %}
 
     </div> <!-- /.container -->
 
-    {% guides_style_18f_include analytics.html %}
-    {% guides_style_18f_include scripts.html %}
+    {% include analytics.html %}
+    {% include scripts.html %}
   </body>
 </html>

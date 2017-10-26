@@ -48,16 +48,16 @@
     <meta property="og:image" content="https://18f.gsa.gov/assets/images/18F-Logo-L.png" />
   {% endif %}
 
-  <!-- If any of the file paths after guides_style_18f_asset_root change, the old ones need to stay in place. See https://github.com/18F/pages-server/issues/55 for more information. -->
-  <link rel="shortcut icon" type="image/ico" href="{% guides_style_18f_asset_root %}/assets/favicons/favicon.ico" />
-  <link rel="icon" type="image/png" href="{% guides_style_18f_asset_root %}/assets/favicons/favicon.png" />
-  <link rel="apple-touch-icon-precomposed" href="{% guides_style_18f_asset_root %}/assets/favicons/18f-center-57.png" />
-  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{% guides_style_18f_asset_root %}/assets/favicons/18f-center-72.png" />
-  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{% guides_style_18f_asset_root %}/assets/favicons/18f-center-114.png" />
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{% guides_style_18f_asset_root %}/assets/favicons/18f-center-144.png"/>
-  <link rel="icon" type="image/png" sizes="192x192" href="{% guides_style_18f_asset_root %}/assets/favicons/18f-center-192.png" />
-  <link rel="stylesheet" href="{% guides_style_18f_asset_root %}/assets/uswds/css/uswds.min.css">
-  <link rel="stylesheet" href="{% guides_style_18f_asset_root %}/assets/css/main.css">
+  <!-- If any of the file paths after site.baseurl change, the old ones need to stay in place. See https://github.com/18F/pages-server/issues/55 for more information. -->
+  <link rel="shortcut icon" type="image/ico" href="{{ site.baseurl }}/assets/favicons/favicon.ico" />
+  <link rel="icon" type="image/png" href="{{ site.baseurl }}/assets/favicons/favicon.png" />
+  <link rel="apple-touch-icon-precomposed" href="{{ site.baseurl }}/assets/favicons/18f-center-57.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{ site.baseurl }}/assets/favicons/18f-center-72.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{ site.baseurl }}/assets/favicons/18f-center-114.png" />
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ site.baseurl }}/assets/favicons/18f-center-144.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ site.baseurl }}/assets/favicons/18f-center-192.png" />
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/uswds/css/uswds.min.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
   {% for style in site.styles %}
   <link rel="stylesheet" href="{{ site.baseurl }}/{{ style }}">
   {% endfor %}
@@ -65,6 +65,6 @@
   <link rel="stylesheet" href="{{ site.baseurl }}/{{ style }}">
   {% endfor %}
 
-  <script src="{% guides_style_18f_asset_root %}/assets/uswds/js/uswds.min.js"></script>
+  <script src="{{ site.baseurl }}/assets/uswds/js/uswds.min.js"></script>
 
 </head>
