@@ -7,7 +7,7 @@
       <a href="{% if child.internal == true %}{{ site.baseurl }}{{ child_url }}{% else %}{{ child.url }}{% endif %}"
         title="{% if page.url == child_url %}Current Page{% else %}{{ child.text }}{% endif %}">{{ child.text }}</a>
       {% assign parent = child %}{% assign parent_url = child_url %}
-      {% guides_style_18f_include sidebar-children.html %}
+      {% include sidebar-children.html %}
       {% capture parent_url %}{% guides_style_18f_pop_last_url_component parent_url %}{% endcapture %}
     </li>{% endfor %}
 </ul>{% endif %}

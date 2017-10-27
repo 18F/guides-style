@@ -33,12 +33,14 @@ add the following (you may need to remove any `layout:`
 this to take effect):
 
 ```yaml
+theme: guides_style_18f
+
 defaults:
   -
     scope:
       path: ""
     values:
-      layout: "guides_style_18f_default"
+      layout: default
 ```
 
 Build the site per usual, and observe the results.

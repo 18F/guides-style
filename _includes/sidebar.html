@@ -7,7 +7,7 @@
              title="{% if page.url == parent_url %}Current Page
                   {% else %}{{ link.text }}{% endif %}">{{ link.text }}</a>
           {% assign parent = link %}
-          {% guides_style_18f_include sidebar-children.html %}
+          {% include sidebar-children.html %}
         </li>{% endfor %}
     </ul>
 </aside>
