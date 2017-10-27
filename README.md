@@ -176,7 +176,7 @@ group :jekyll_plugins do
 end
 ```
 
-You can find the different style assets and templates within subdirectories of
+then build the site with `bundle exec jekyll serve`. You can find the different style assets and templates within subdirectories of
 the `assets` and `lib/guides_style_18f` directories of this repository. Edit
 those, then rebuild the Jekyll site as usual to see the results.
 
