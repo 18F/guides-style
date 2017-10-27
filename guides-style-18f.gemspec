@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.homepage      = 'https://github.com/18F/guides-style'
   s.license       = 'CC0'
 
-  s.files         = `git ls-files -z *.md lib assets`.split("\x0")
+  s.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test)}i) }
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename f }
 
   # requires https://github.com/jekyll/jekyll/pull/5364
