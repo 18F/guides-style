@@ -185,6 +185,7 @@ Navigation
 .sidebar-nav a:link,
 .sidebar-nav a:visited {
   border-bottom: none;
+  border-left: 4px solid transparent;
   color: #74767B;
 }
 
@@ -205,7 +206,7 @@ Navigation
 .sidebar-nav li {
   list-style: none;
   border-bottom: 1px solid #babbbd;
-  font-size: 1.125em;
+  line-height: 1.4;
   overflow: hidden;
 }
 
