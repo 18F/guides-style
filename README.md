@@ -1,6 +1,6 @@
 ## [`guides_style_18f`](https://rubygems.org/gems/guides_style_18f): 18F Guides style gem
 
-[![Build Status](https://travis-ci.org/18F/guides-style.svg?branch=master)](https://travis-ci.org/18F/guides-style)
+[![CircleCI](https://circleci.com/gh/18F/guides-style.svg?style=svg)](https://circleci.com/gh/18F/guides-style)
 
 Provides consistent style elements for [Jekyll](https://jekyllrb.com/)-based
 web sites based on the
