@@ -1,0 +1,23 @@
+<!-- If any of the file paths after site.baseurl change, the old ones need to stay in place. See https://github.com/18F/pages-server/issues/55 for more information. -->
+<script src="{{ site.baseurl }}/assets/js/vendor/jquery-1.12.4.min.js"></script>
+<script src="{{ site.baseurl }}/assets/js/accordion.js"></script>
+<script src="{{ site.baseurl }}/assets/js/vendor/private-eye-1.1.0.js"></script>
+<script src="{{ site.baseurl }}/assets/js/18f-guide.js"></script>{% for script in site.scripts %}
+<script src="{{ site.baseurl }}/{{ script }}"></script>{% endfor %}{% for script in page.scripts %}
+<script src="{{ site.baseurl }}/{{ script }}"></script>{% endfor %}
+{% if site.jekyll_pages_api_search %}
+  {% jekyll_pages_api_search_load %}
+{% endif %}
+{% if site.search_gov_handle %}
+<script type="text/javascript">
+//<![CDATA[
+      var usasearch_config = { siteHandle: "{{ site.search_gov_handle }}" };
+
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = "//search.usa.gov/javascripts/remote.loader.js";
+      document.getElementsByTagName("head")[0].appendChild(script);
+
+//]]>
+</script>
+{% endif %}

@@ -198,14 +198,6 @@ module GuidesStyle18F
       end
     end
 
-    def test_add_all_pages_from_scratch_without_collection
-      write_config_without_collection
-      move_home_page_and_create_external_page
-      add_permalinks(ALL_PAGES)
-      GuidesStyle18F.update_navigation_configuration testdir
-      assert_result_matches_expected_config(sorted_nav_data(NAV_DATA))
-    end
-
     CONFIG_WITH_EXTERNAL_PAGE = [
       COLLECTIONS_CONFIG,
       LEADING_COMMENT,
@@ -362,15 +354,11 @@ NO_TRAILING_SLASH
       'no-trailing-slash.md' => NO_TRAILING_SLASH,
     }
 
-    EXPECTED_ERRORS = <<EXPECTED_ERRORS
-The following files have errors in their front matter:
-  _pages/missing-front-matter.md:
-    no front matter defined
-  _pages/no-leading-slash.md:
-    `permalink:` does not begin with '/'
-  _pages/no-trailing-slash.md:
-    `permalink:` does not end with '/'
-EXPECTED_ERRORS
+    EXPECTED_ERRORS = {
+      "_pages/missing-front-matter.md" => ["no front matter defined"],
+      "_pages/no-leading-slash.md" => ["`permalink:` does not begin with '/'"],
+      "_pages/no-trailing-slash.md" => ["`permalink:` does not end with '/'"]
+    }
 
     def write_page(filename, content)
       File.write File.join(pages_dir, filename), content
@@ -379,9 +367,9 @@ EXPECTED_ERRORS
     def test_detect_front_matter_errors
       write_config NAV_YAML
       FILES_WITH_ERRORS.each { |file, content| write_page file, content }
-      errors = GuidesStyle18F::FrontMatter.validate_with_message_upon_error(
-        GuidesStyle18F::FrontMatter.load(testdir))
-      assert_equal EXPECTED_ERRORS, errors + "\n"
+      front_matter = GuidesStyle18F::FrontMatter.load(testdir)
+      errors = GuidesStyle18F::FrontMatter.validate(front_matter)
+      assert_equal(EXPECTED_ERRORS, errors)
     end
 
     def test_ignore_static_files
@@ -426,7 +414,7 @@ WITH_NAVTITLE
           GuidesStyle18F.update_navigation_configuration testdir
         end
         assert_equal 1, exception.status
-        assert($stderr.string.include? EXPECTED_ERRORS + "_config.yml not updated\n")
+        assert_includes($stderr.string, "_config.yml not updated")
       end
     end
   end

@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.summary       = '18F Guides Template style elements'
   s.description   = (
     'Provides consistent style elements for documents based on the ' \
-    '18F Guides Template (https://pages.18f.gov/guides-template/). ' \
+    '18F Guides Template (https://guides-template.18f.gov/). ' \
     'The 18F Guides theme is based on ' \
     'DOCter (https://github.com/cfpb/docter/) from ' \
     'CFPB (http://cfpb.github.io/).'
@@ -22,11 +22,10 @@ Gem::Specification.new do |s|
   s.files         = `git ls-files -z *.md lib assets`.split("\x0")
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename f }
 
-  s.add_runtime_dependency 'jekyll'
+  # requires https://github.com/jekyll/jekyll/pull/5364
+  s.add_runtime_dependency 'jekyll', '~> 3.3'
   s.add_runtime_dependency 'jekyll_pages_api'
   s.add_runtime_dependency 'jekyll_pages_api_search'
-  s.add_runtime_dependency 'sass'
-  s.add_runtime_dependency 'rouge'
   s.add_development_dependency 'go_script'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'minitest'

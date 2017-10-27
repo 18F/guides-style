@@ -1,6 +1,6 @@
 ## [`guides_style_18f`](https://rubygems.org/gems/guides_style_18f): 18F Guides style gem
 
-[![Build Status](https://travis-ci.org/18F/guides-style.svg?branch=master)](https://travis-ci.org/18F/guides-style)
+[![CircleCI](https://circleci.com/gh/18F/guides-style.svg?style=svg)](https://circleci.com/gh/18F/guides-style)
 
 Provides consistent style elements for [Jekyll](https://jekyllrb.com/)-based
 web sites based on the
@@ -33,12 +33,14 @@ add the following (you may need to remove any `layout:`
 this to take effect):
 
 ```yaml
+theme: guides_style_18f
+
 defaults:
   -
     scope:
       path: ""
     values:
-      layout: "guides_style_18f_default"
+      layout: default
 ```
 
 Build the site per usual, and observe the results.
@@ -115,6 +117,46 @@ navigation:
     internal: true
 ```
 
+### Search
+
+There are two options for search.
+
+#### jekyll_pages_api_search
+
+Pros:
+
+* Generates a search index locally, which has the advantage of being self-contained. This means you can easily test search locally, on a staging site, etc.
+* Search results are shown in your site's layout
+
+Cons:
+
+* Slows down your build
+
+Usage: see [the instructions](https://github.com/18F/jekyll_pages_api_search#installation).
+
+#### search.gov
+
+Pros:
+
+* A hosted service, so your site has fewer moving parts.
+* A more full-featured search engine
+* Search results show a preview of the text on the page, with highlighted term(s)
+* Provides analytics
+
+Cons:
+
+* You need to register your site
+* Can't test search results locally
+
+Usage:
+
+1. Register your site at [search.gov](https://search.gov/).
+1. Add the following to your `_config.yml`:
+
+    ```yaml
+    search_gov_handle: <your Site Handle from the search.gov Settings page>
+    ```
+
 ### Development
 
 First, choose a Jekyll site you'd like to use to view the impact of your
@@ -134,7 +176,7 @@ group :jekyll_plugins do
 end
 ```
 
-You can find the different style assets and templates within subdirectories of
+then build the site with `bundle exec jekyll serve`. You can find the different style assets and templates within subdirectories of
 the `assets` and `lib/guides_style_18f` directories of this repository. Edit
 those, then rebuild the Jekyll site as usual to see the results.
 

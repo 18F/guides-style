@@ -13,6 +13,10 @@ module GuidesStyle18F
       @source = ''
     end
 
+    def frontmatter_defaults
+      @frontmatter_defaults ||= Jekyll::FrontmatterDefaults.new(self)
+    end
+
     def site_payload
       {}
     end

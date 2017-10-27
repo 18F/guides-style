@@ -1,0 +1,13 @@
+{% if parent.children %}
+{% capture expand_nav %}{% guides_style_18f_should_expand_nav parent, parent_url %}{% endcapture %}
+<ul class="usa-sidenav-sub_list">
+  {% for child in parent.children %}
+  {% capture child_url %}{{ parent_url }}{{ child.url }}{% endcapture %}
+    <li class="{% if page.url == child_url %}usa-current{% endif %}">
+      <a href="{% if child.internal == true %}{{ site.baseurl }}{{ child_url }}{% else %}{{ child.url }}{% endif %}"
+        title="{% if page.url == child_url %}Current Page{% else %}{{ child.text }}{% endif %}">{{ child.text }}</a>
+      {% assign parent = child %}{% assign parent_url = child_url %}
+      {% include sidebar-children.html %}
+      {% capture parent_url %}{% guides_style_18f_pop_last_url_component parent_url %}{% endcapture %}
+    </li>{% endfor %}
+</ul>{% endif %}

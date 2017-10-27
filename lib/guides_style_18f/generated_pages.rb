@@ -1,8 +1,6 @@
-require_relative './layouts'
-
 module GuidesStyle18F
   class GeneratedPages
-    DEFAULT_LAYOUT = 'guides_style_18f_generated_home_redirect'
+    DEFAULT_LAYOUT = 'home-redirect'
 
     def self.generate_pages_from_navigation_data(site)
       layout = site.config['generate_nodes']

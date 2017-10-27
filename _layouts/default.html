@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: 'en-US' }}">
+
+  {% include head.html %}
+
+  <body>
+
+    <div class="container">
+      {% include header.html %}
+      <div class="usa-grid">
+
+        {% include sidebar.html %}
+        <main id="main" class="usa-width-two-thirds usa-layout-docs-main_content" role="main">
+          <h1>{{ page.title }}</h1>
+          {{ content }}
+        </main>
+
+
+      </div><!-- /.wrap content -->
+
+      {% include footer.html %}
+
+    </div> <!-- /.container -->
+
+    {% include analytics.html %}
+    {% include scripts.html %}
+  </body>
+</html>
